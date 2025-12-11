@@ -68,6 +68,34 @@ function Login() {
       });
 
       if (response && response.data) {
+        // Check if IP verification is required
+        if (response.data.status === 'verification_required') {
+          // Store the authentication token temporarily for IP verification
+          const fifteenMinutes = 15 * 60 * 1000;
+          const expireDate = new Date(Date.now() + fifteenMinutes);
+          
+          if (response.data.token) {
+            cookies.set(constant.AUTH_TOKEN, response.data.token, {
+              path: "/",
+              expires: expireDate,
+              secure: true,
+              sameSite: "Strict"
+            });
+          }
+
+          // Store user data temporarily for after verification
+          cookies.set('temp_user_data', JSON.stringify(response.data.data), {
+            path: "/",
+            expires: expireDate,
+            secure: true,
+            sameSite: "Strict"
+          });
+
+          toast.info(t("IP_VERIFICATION_REQUIRED") || "IP verification required. Please enter the code sent to your device.");
+          navigate('/verifyIp');
+          return;
+        }
+
         const { user } = response.data;
         setUser(response.data);
         const thirtyDays = 30 * 24 * 60 * 60 * 1000;
@@ -104,6 +132,39 @@ function Login() {
         toast.error(t("LOGIN_FAILED"));
       }
     } catch (error) {
+      // Handle 401 Unauthorized - IP verification may be required
+      if (error.response?.status === 401) {
+        const errorData = error.response?.data;
+        
+        // Check if IP verification is required
+        if (errorData?.status === 'verification_required') {
+          // Store the authentication token temporarily for IP verification
+          const fifteenMinutes = 15 * 60 * 1000;
+          const expireDate = new Date(Date.now() + fifteenMinutes);
+          
+          if (errorData.token) {
+            cookies.set(constant.AUTH_TOKEN, errorData.token, {
+              path: "/",
+              expires: expireDate,
+              secure: true,
+              sameSite: "Strict"
+            });
+          }
+
+          // Store user data temporarily for after verification
+          cookies.set('temp_user_data', JSON.stringify(errorData.data), {
+            path: "/",
+            expires: expireDate,
+            secure: true,
+            sameSite: "Strict"
+          });
+
+          toast.info(t("IP_VERIFICATION_REQUIRED") || "IP verification required. Please enter the code sent to your device.");
+          navigate('/verifyIp');
+          return;
+        }
+      }
+      
       const errorMessage = error.response?.data?.message || t("LOGIN_FAILED");
       toast.error(errorMessage);
     } finally {

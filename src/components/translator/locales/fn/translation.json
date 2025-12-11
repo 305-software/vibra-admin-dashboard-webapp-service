@@ -238,5 +238,20 @@
     "PASSWORD_DOES_NOT_MEET_SECURITY_REQUIREMENTS": "Le mot de passe ne répond pas aux exigences de sécurité",
     "PASSWORD_CANNOT_CONTAIN_WORD_PASSWORD": "Le mot de passe ne peut pas contenir le mot 'password'",
     "RESETTING": "Réinitialisation",
-    "SUBMITTING": "Envoi en cours"
+    "SUBMITTING": "Envoi en cours",
+    
+    "IP_VERIFICATION_REQUIRED": "Vérification IP requise. Veuillez entrer le code envoyé à votre appareil.",
+    "IP_VERIFICATION": "Vérification IP",
+    "ENTER_THE_CODE_SENT_TO_VERIFY_IP": "Entrez le code de vérification envoyé à votre appareil pour vérifier cette connexion depuis votre emplacement",
+    "ENTER_6_DIGIT_CODE": "Entrez un code de 6 caractères",
+    "VERIFY_IP": "Vérifier IP",
+    "INVALID_CODE": "Code invalide",
+    "IP_VERIFICATION_FAILED": "Échec de la vérification IP",
+    "IP_VERIFIED_SUCCESSFULLY": "IP vérifiée avec succès",
+    "DIDNT_RECEIVE_CODE": "Vous n'avez pas reçu le code ?",
+    "RESEND_CODE": "Renvoyer le code",
+    "NEW_CODE_SENT_SUCCESSFULLY": "Nouveau code envoyé avec succès",
+    "FAILED_TO_RESEND_CODE": "Échec du renvoi du code",
+    "IP_VERIFICATION_SECURITY_NOTICE": "Ceci est une mesure de sécurité supplémentaire pour protéger votre compte.",
+    "REDIRECTING_TO_LOGIN": "Redirection vers la connexion..."
 }

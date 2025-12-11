@@ -238,5 +238,20 @@
     "PASSWORD_DOES_NOT_MEET_SECURITY_REQUIREMENTS": "密码不符合安全要求",
     "PASSWORD_CANNOT_CONTAIN_WORD_PASSWORD": "密码不能包含'password'字样",
     "RESETTING": "重置中",
-    "SUBMITTING": "提交中"
+    "SUBMITTING": "提交中",
+    
+    "IP_VERIFICATION_REQUIRED": "需要IP验证。请输入发送到您设备的代码。",
+    "IP_VERIFICATION": "IP验证",
+    "ENTER_THE_CODE_SENT_TO_VERIFY_IP": "请输入发送到您设备的验证代码以验证来自您位置的此登录",
+    "ENTER_6_DIGIT_CODE": "输入6位代码",
+    "VERIFY_IP": "验证IP",
+    "INVALID_CODE": "无效代码",
+    "IP_VERIFICATION_FAILED": "IP验证失败",
+    "IP_VERIFIED_SUCCESSFULLY": "IP验证成功",
+    "DIDNT_RECEIVE_CODE": "没有收到代码？",
+    "RESEND_CODE": "重新发送代码",
+    "NEW_CODE_SENT_SUCCESSFULLY": "新代码发送成功",
+    "FAILED_TO_RESEND_CODE": "重新发送代码失败",
+    "IP_VERIFICATION_SECURITY_NOTICE": "这是保护您账户的额外安全措施。",
+    "REDIRECTING_TO_LOGIN": "重定向到登录..."
 }

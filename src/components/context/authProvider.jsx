@@ -43,7 +43,11 @@ const AuthProvider = ({ children }) => {
 
     try {
       setIsRefreshing(true);
-      const response = await axios.post(config.refreshToken, {}, { withCredentials: true });
+      const response = await axios.post(config.refreshTokenUrl,
+         {
+           "refreshToken": localStorage.getItem("refreshToken") || ""
+         },
+          { withCredentials: true });
 
       if (response.data.accessToken) {
         localStorage.setItem("accessToken", response.data.accessToken);
@@ -59,7 +63,7 @@ const AuthProvider = ({ children }) => {
   }, [isRefreshing]);
 
   // ✅ Validate token and restore session
-  const validateToken = useCallback(async (retry = true) => {
+  const validateToken = useCallback(async (retry = false) => {
     try {
       const response = await axios.get(config.validateToken, {
         withCredentials: true,

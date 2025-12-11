@@ -73,7 +73,21 @@ import config from "../../config";
 
 
 export async function loginResponse(formValues) {
-    const response = await axios.post(`${config.dashboardlogin}`, formValues);
+    let deviceIP = 'unknown';
+    try {
+        const response_ip = await fetch('https://api.ipify.org?format=json');
+        const data = await response_ip.json();
+        deviceIP = data.ip;
+    } catch (error) {
+        console.error('Failed to fetch device IP:', error);
+    }
+
+    const response = await axios.post(`${config.dashboardlogin}`, formValues, {
+        headers: {
+            'x-forwarded-for': deviceIP,
+            'x-device-fingerprint': '1234567',
+        }
+    });
     return response.data;
 }
 
@@ -91,5 +105,38 @@ export async function verifyOtp(formValues) {
 
 export async function resetPassword(formValues) {
     const response = await axios.post(`${config.resetPassword}`, formValues);
+    return response.data;
+}
+
+/**
+ * Sends a request to verify the user's IP address.
+ *
+ * @async
+ * @function verifyIp
+ * @param {object} formValues - The verification code sent to the user.
+ * @returns {Promise<object>} The response data from the server.
+ * @throws {Error} Throws an error if the request fails.
+ *
+ * @example
+ * const response = await verifyIp({ code });
+ */
+export async function verifyIp(formValues) {
+    const response = await axios.post(`${config.verifyIp}`, formValues);
+    return response.data;
+}
+
+/**
+ * Sends a request to resend the IP verification code.
+ *
+ * @async
+ * @function resendIpCode
+ * @returns {Promise<object>} The response data from the server.
+ * @throws {Error} Throws an error if the request fails.
+ *
+ * @example
+ * const response = await resendIpCode();
+ */
+export async function resendIpCode() {
+    const response = await axios.post(`${config.resendIpCode}`);
     return response.data;
 }

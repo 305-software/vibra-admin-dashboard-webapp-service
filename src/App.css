@@ -2,3 +2,14 @@ body{
   font-family: Inter;
 }
 
+/* Add to your main CSS file (e.g., App.css or index.css) */
+.Toastify__toast-container {
+  top: 90px;
+  right: 20px;
+  width: auto;
+}
+
+.Toastify__toast-container--top-right {
+  top: 90px;
+  right: 20px;
+}

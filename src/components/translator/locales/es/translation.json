@@ -239,6 +239,21 @@
     "PASSWORD_CANNOT_CONTAIN_WORD_PASSWORD": "La contraseña no puede contener la palabra 'password'",
     "RESETTING": "Restableciendo",
     "SUBMITTING": "Enviando",
-    "BUSINESS_ALREADY_EXISTS": "El negocio ya existe. Por favor inicie sesión con correo electrónico y contraseña.",
-    "SIGNUP": "Registrarse"
+  "BUSINESS_ALREADY_EXISTS": "El negocio ya existe. Por favor inicie sesión con correo electrónico y contraseña.",
+  "SIGNUP": "Registrarse",
+  
+  "IP_VERIFICATION_REQUIRED": "Verificación de IP requerida. Por favor ingrese el código enviado a su dispositivo.",
+  "IP_VERIFICATION": "Verificación de IP",
+  "ENTER_THE_CODE_SENT_TO_VERIFY_IP": "Ingrese el código de verificación enviado a su dispositivo para verificar este inicio de sesión desde su ubicación",
+  "ENTER_6_DIGIT_CODE": "Ingrese código de 6 caracteres",
+  "VERIFY_IP": "Verificar IP",
+  "INVALID_CODE": "Código inválido",
+  "IP_VERIFICATION_FAILED": "Error en la verificación de IP",
+  "IP_VERIFIED_SUCCESSFULLY": "IP verificada exitosamente",
+  "DIDNT_RECEIVE_CODE": "¿No recibiste el código?",
+  "RESEND_CODE": "Reenviar código",
+  "NEW_CODE_SENT_SUCCESSFULLY": "Nuevo código enviado exitosamente",
+  "FAILED_TO_RESEND_CODE": "Error al reenviar el código",
+  "IP_VERIFICATION_SECURITY_NOTICE": "Esta es una medida de seguridad adicional para proteger su cuenta.",
+  "REDIRECTING_TO_LOGIN": "Redirigiendo al inicio de sesión..."
 }

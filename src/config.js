@@ -60,6 +60,8 @@ const combine = {
   stats: config.baseURL + "/stats",
   trendingEvents: config.baseURL + "/trending-events",
   latestSales: config.baseURL + "/latest-sales",
+  verifyIp: config.baseURL + "/verify-otp-new-ip",
+  resendIpCode: config.baseURL + "/resend-ip-code",
   imageUrl: config.baseURL,
 
 

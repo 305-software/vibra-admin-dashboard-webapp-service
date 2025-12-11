@@ -260,7 +260,22 @@
   "OTP_SECURITY_NOTICE": "For security, this OTP will expire in 10 minutes",
   "BUSINESS_ALREADY_EXISTS": "Business already exists. Please login with email and password.",
   "SIGNUP": "Sign up",
-  "CREATE_AN_ACCOUNT": "Create an account"
+  "CREATE_AN_ACCOUNT": "Create an account",
+  
+  "IP_VERIFICATION_REQUIRED": "IP verification required. Please enter the code sent to your device.",
+  "IP_VERIFICATION": "IP Verification",
+  "ENTER_THE_CODE_SENT_TO_VERIFY_IP": "Enter the verification code sent to your device to verify this login from your location",
+  "ENTER_6_DIGIT_CODE": "Enter 6-character code",
+  "VERIFY_IP": "Verify IP",
+  "INVALID_CODE": "Invalid code",
+  "IP_VERIFICATION_FAILED": "IP verification failed",
+  "IP_VERIFIED_SUCCESSFULLY": "IP verified successfully",
+  "DIDNT_RECEIVE_CODE": "Didn't receive the code?",
+  "RESEND_CODE": "Resend code",
+  "NEW_CODE_SENT_SUCCESSFULLY": "New code sent successfully",
+  "FAILED_TO_RESEND_CODE": "Failed to resend code",
+  "IP_VERIFICATION_SECURITY_NOTICE": "This is an additional security measure to protect your account.",
+  "REDIRECTING_TO_LOGIN": "Redirecting to login..."
 }
 
 
