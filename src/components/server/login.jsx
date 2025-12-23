@@ -121,7 +121,21 @@ export async function resetPassword(formValues) {
  * const response = await verifyIp({ code });
  */
 export async function verifyIp(formValues) {
-    const response = await axios.post(`${config.verifyIp}`, formValues);
+    let deviceIP = 'unknown';
+    try {
+        const response_ip = await fetch('https://api.ipify.org?format=json');
+        const data = await response_ip.json();
+        deviceIP = data.ip;
+    } catch (error) {
+        console.error('Failed to fetch device IP:', error);
+    }
+
+    const response = await axios.post(`${config.verifyIp}`, formValues, {
+        headers: {
+            'x-forwarded-for': deviceIP,
+            'x-device-fingerprint': '1234567',
+        }
+    });
     return response.data;
 }
 

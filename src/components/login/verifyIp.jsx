@@ -204,7 +204,7 @@ function VerifyIp() {
     
     if (tempUserDataStr) {
       try {
-        userData = JSON.parse(tempUserDataStr);
+        userData = JSON.parse(JSON.stringify(tempUserDataStr));
       } catch (e) {
         console.error('Failed to parse temp user data:', e);
       }
@@ -212,7 +212,7 @@ function VerifyIp() {
 
     const details = {
       otp: code.trim().toUpperCase(),
-      email: userData?.user?.email || '',
+      email: userData?.email || '',
     };
 
     try {
