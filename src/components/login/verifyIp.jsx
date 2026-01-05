@@ -213,6 +213,8 @@ function VerifyIp() {
     const details = {
       otp: code.trim().toUpperCase(),
       email: userData?.email || '',
+      ip : userData?.ip || '',
+      deviceFingerprint: userData?.deviceFingerprint || ''
     };
 
     try {
