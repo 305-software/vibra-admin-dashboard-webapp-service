@@ -16,6 +16,7 @@ import Login from "./components/login/login";
 import Otp from "./components/login/otp";
 import ResetPassword from "./components/login/resetPassword";
 import VerifyIp from "./components/login/verifyIp";
+import BusinessVerification from "./containers/businessVerification";
 import Analytics from "./containers/analytics";
 import Booking from "./containers/booking";
 import CreateEvent from "./containers/createEvent";
@@ -34,6 +35,7 @@ function App() {
           <Route path="/" element={<UserProvider><Login /></UserProvider>} />
           <Route path="/login" element={<UserProvider><Login /></UserProvider>} />
           <Route path="/verifyIp" element={<UserProvider><VerifyIp /></UserProvider>} />
+          <Route path="/businessVerification" element={<UserProvider><BusinessVerification /></UserProvider>} />
           <Route path="/otp" element={<UserProvider><Otp /></UserProvider>} />
           <Route path="/forgotPassword" element={<UserProvider><ForgotPassword /></UserProvider>} />
           <Route path="/resetPassword" element={<UserProvider><ResetPassword /></UserProvider>} />

@@ -63,6 +63,7 @@ const combine = {
   verifyIp: config.baseURL + "/verify-otp-new-ip",
   resendIpCode: config.baseURL + "/resend-ip-code",
   imageUrl: config.baseURL,
+  businessVerification: config.baseURL + "/verify-business"
 
 
 };

@@ -17,6 +17,30 @@ import { loginResponse } from "../server/login";
 import Signup from '../signup/signup';
 
 /**
+ * Check if user is admin based on role permissions
+ * Supports both array and object formats for rolePermission
+ * @param {object|array} rolePermission - User's role permission object or array
+ * @returns {boolean} True if user has admin role
+ */
+const isAdmin = (rolePermission) => {
+  if (!rolePermission) return false;
+  
+  // Check if rolePermission is an array
+  if (Array.isArray(rolePermission)) {
+    return rolePermission.some(role => 
+      role?.roleName?.toLowerCase() === 'SuperAdmin'.toLowerCase() ||
+      role?.role?.toLowerCase() === 'SuperAdmin'.toLowerCase() ||
+      role?.name?.toLowerCase() === 'SuperAdmin'.toLowerCase()
+    );
+  }
+  
+  // Fallback for object format
+  return rolePermission.role?.toLowerCase() === 'SuperAdmin'.toLowerCase() || 
+         rolePermission.name?.toLowerCase() === 'SuperAdmin'.toLowerCase() ||
+         rolePermission.roleName?.toLowerCase() === 'SuperAdmin'.toLowerCase();
+};
+
+/**
  * Login component for user authentication.
  * 
  * @component
@@ -122,6 +146,20 @@ function Login() {
           secure: true,
           sameSite: "Strict"
         });
+
+        // Check if user is admin
+        if (!isAdmin(user.rolePermission)) {
+          // Redirect non-admin users to business verification
+          cookies.set('pending_user_data', JSON.stringify(response.data), {
+            path: "/",
+            expires: expireDate,
+            secure: true,
+            sameSite: "Strict"
+          });
+          toast.info(t("PLEASE_VERIFY_BUSINESS") || "Please verify your business details to continue.");
+          navigate('/businessVerification');
+          return;
+        }
 
         // Determine the first accessible route based on permissions
         const firstAccessibleRoute = findFirstAccessibleRoute(user.rolePermission);

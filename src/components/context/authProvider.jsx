@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-
+import Cookies from "universal-cookie";
 import config from "../../config";
 import * as constant from "../../utlis/constant";
 import Spinner from "../../utlis/spinner";
@@ -117,11 +117,19 @@ const AuthProvider = ({ children }) => {
 
   // ✅ Logout function
   const handleLogout = useCallback(() => {
+    const cookies = new Cookies(null, { path: "/" });
+    cookies.remove(constant.USER, { path: "/" });
+    cookies.remove(constant.ROLES, { path: "/" });
+    cookies.remove(constant.NAME_SMALL, { path: "/" });
+    cookies.remove(constant.AUTH_TOKEN, { path: "/" });
+    cookies.remove('pending_user_data', { path: "/" });
     localStorage.removeItem("accessToken");
     localStorage.removeItem(constant.LASTPATH); // Clear last path on logout
     delete axios.defaults.headers.common["Authorization"];
     setAuth({ isAuthenticated: false, user: null, loading: false });
     navigate("/", { replace: true });
+    // Show logout message
+    toast.success('Logged out successfully');
   }, [navigate]);
 
   const contextValue = useMemo(

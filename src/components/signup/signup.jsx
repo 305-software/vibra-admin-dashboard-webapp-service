@@ -17,6 +17,30 @@ import Login from '../login/login';
 import { createAccount } from '../server/signup';
 
 /**
+ * Check if user is admin based on role permissions
+ * Supports both array and object formats for rolePermission
+ * @param {object|array} rolePermission - User's role permission object or array
+ * @returns {boolean} True if user has admin role
+ */
+const isAdmin = (rolePermission) => {
+  if (!rolePermission) return false;
+  
+  // Check if rolePermission is an array
+  if (Array.isArray(rolePermission)) {
+    return rolePermission.some(role => 
+      role?.roleName?.toLowerCase() === 'SuperAdmin'.toLowerCase() ||
+      role?.role?.toLowerCase() === 'SuperAdmin'.toLowerCase() ||
+      role?.name?.toLowerCase() === 'SuperAdmin'.toLowerCase()
+    );
+  }
+  
+  // Fallback for object format
+  return rolePermission.role?.toLowerCase() === 'SuperAdmin'.toLowerCase() || 
+         rolePermission.name?.toLowerCase() === 'SuperAdmin'.toLowerCase() ||
+         rolePermission.roleName?.toLowerCase() === 'SuperAdmin'.toLowerCase();
+};
+
+/**
  * Signup component for user authentication.
  * 
  * @component
@@ -64,7 +88,7 @@ function Signup() {
       const response = await createAccount({
         email: formValues.email.trim().toLowerCase(),
         password: formValues.password,
-        rememberMe: rememberMe,
+        signinMethod: 'email'
       });
 
       if (response && response.data) {
@@ -94,6 +118,20 @@ function Signup() {
           secure: true,
           sameSite: "Strict"
         });
+
+        // Check if user is admin
+        if (!isAdmin(user.rolePermission)) {
+          // Redirect non-admin users to business verification
+          cookies.set('pending_user_data', JSON.stringify(response.data), {
+            path: "/",
+            expires: expireDate,
+            secure: true,
+            sameSite: "Strict"
+          });
+          toast.info(t("PLEASE_VERIFY_BUSINESS") || "Please verify your business details to continue.");
+          navigate('/businessVerification');
+          return;
+        }
 
         // Determine the first accessible route based on permissions
         const firstAccessibleRoute = findFirstAccessibleRoute(user.rolePermission);
@@ -184,22 +222,20 @@ function Signup() {
                   <span className='signup'>{t("SIGN_IN")}</span>
                 </div>
               </div>
-              {/* Sign-Up Button */}
-              <div className="d-grid gap-2" style={{ marginTop: 16 }}>
+              <div className="d-grid gap-2">
                 <Button
-                  type="button"
-                  className="google-sign-in-btn"
-                  name={t("SIGN_IN_WITH_GOOGLE")}
-                  onClick={() => toast.info(t("GOOGLE_SIGN_IN_NOT_IMPLEMENTED"))}
+                  type="submit"
+                  className="sign-in-btn"
+                  name={loading ? "Creating account..." : t("SIGN_UP")}
                   disabled={loading}
                 />
               </div>
-              {/* Sign-Up Button */}
+              {/* Google Sign-Up Button */}
               <div className="d-grid gap-2" style={{ marginTop: 16 }}>
                 <Button
                   type="button"
                   className="google-sign-in-btn"
-                  name={t("SIGN_IN_WITH_GOOGLE")}
+                  name={t("SIGN_UP_WITH_GOOGLE")}
                   onClick={() => toast.info(t("GOOGLE_SIGN_IN_NOT_IMPLEMENTED"))}
                   disabled={loading}
                 />
