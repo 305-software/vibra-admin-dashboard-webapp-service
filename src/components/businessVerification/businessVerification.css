@@ -2,14 +2,17 @@
     max-width: 600px;
     margin: 0 auto;
     padding: 30px;
-    background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(40px);
+    border-radius: 10px;
     font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    max-height: 100vh;
+    overflow-y: auto;
 }
 
 .verification-header {
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     text-align: center;
 }
 
@@ -20,17 +23,23 @@
     gap: 20px;
 }
 
+.verification-header .header-content {
+    text-align: left;
+}
+
 .verification-header h2 {
-    font-size: 24px;
-    font-weight: 600;
-    color: #1f2937;
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffffff;
     margin-bottom: 8px;
+    letter-spacing: -0.5px;
 }
 
 .verification-header p {
-    font-size: 14px;
-    color: #6b7280;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.8);
     margin: 0;
+    font-weight: 400;
 }
 
 .logout-button {
@@ -125,20 +134,42 @@
 }
 
 .form-section {
-    margin-bottom: 28px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 32px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .form-section:last-of-type {
     border-bottom: none;
-    margin-bottom: 0;
+    padding-bottom: 0;
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: capitalize;
+    letter-spacing: -0.3px;
+    margin-top: 0;
+}
+
+.section-title:before {
+    content: '';
+    width: 3px;
+    height: 20px;
+    background: #fbbf24;
+    border-radius: 2px;
 }
 
 .form-section h3 {
     font-size: 16px;
     font-weight: 600;
-    color: #1f2937;
+    color: #ffffff;
     margin-bottom: 16px;
     margin-top: 0;
 }
@@ -146,6 +177,107 @@
 .form-actions {
     margin-top: 30px;
     margin-bottom: 0;
+}
+
+/* Ant Design Form Elements Styling */
+.business-verification-form .ant-form-item-label > label {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}
+
+.business-verification-form .ant-input,
+.business-verification-form .ant-input-textarea,
+.business-verification-form .ant-input-textarea > textarea {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.business-verification-form textarea,
+.business-verification-form .ant-input-textarea-affix-wrapper {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.business-verification-form .ant-input-textarea-wrapper,
+.business-verification-form .ant-input-textarea-show-count {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.business-verification-form .ant-input-textarea-show-count::after {
+    color: #ffffff !important;
+}
+
+.business-verification-form .ant-input-textarea-show-count {
+    color: #ffffff !important;
+}
+
+.business-verification-form [data-count] {
+    color: #ffffff !important;
+}
+
+.business-verification-form .ant-input-textarea-wrapper .ant-input-textarea-show-count {
+    color: #ffffff !important;
+}
+
+.business-verification-form .ant-input-textarea-show-count * {
+    color: #ffffff !important;
+}
+
+.business-verification-form .ant-input::placeholder,
+.business-verification-form .ant-input-textarea > textarea::placeholder,
+.business-verification-form textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.business-verification-form .ant-input:hover,
+.business-verification-form .ant-input-textarea:hover,
+.business-verification-form .ant-input-textarea > textarea:hover,
+.business-verification-form textarea:hover {
+    border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.business-verification-form .ant-input:focus,
+.business-verification-form .ant-input-textarea:focus,
+.business-verification-form .ant-input-textarea > textarea:focus,
+.business-verification-form textarea:focus {
+    border-color: #fbbf24 !important;
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2) !important;
+}
+
+.business-verification-form .ant-select-selector {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.business-verification-form .ant-select-selection-item {
+    color: #ffffff !important;
+}
+
+.business-verification-form .ant-select-selection-placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.business-verification-form .ant-select:hover .ant-select-selector {
+    border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.business-verification-form .ant-select-focused .ant-select-selector {
+    border-color: #fbbf24 !important;
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2) !important;
+}
+
+.business-verification-form .ant-select-dropdown {
+    background-color: #1f2937;
+}
+
+.business-verification-form .ant-select-item {
+    color: #ffffff;
+}
+
+.business-verification-form .ant-select-item:hover {
+    background-color: rgba(251, 191, 36, 0.1);
 }
 
 .submit-button {
@@ -169,6 +301,16 @@
     background-color: #d97706;
     border-color: #d97706;
     color: #1f2937;
+}
+
+/* Login Background - Remove extra spacing */
+.login-background {
+    padding: 15px 0 !important;
+    margin: 0 !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Responsive Design */

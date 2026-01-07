@@ -6,10 +6,12 @@
  */
 import axios from "axios";
 import React, { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Cookies from "universal-cookie";
 
+import config from '../config';
+import { AuthContext } from '../components/context/authProvider';
 import { findFirstAccessibleRoute } from '../layout/sidebarData';
 import * as constant from "../utlis/constant";
 import { UserContext } from "../components/context/userContext";
@@ -22,17 +24,16 @@ import { submitBusinessVerification } from '../components/server/businessVerific
  */
 const BusinessVerificationContainer = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const { logout } = useContext(AuthContext);
     const { setUser } = useContext(UserContext);
     const [pendingUserData, setPendingUserData] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [hasCheckedData, setHasCheckedData] = useState(false);
+    const cookiesRef = React.useRef(new Cookies(null, { path: "/" }));
 
     useEffect(() => {
-        // Only run once to fetch pending user data
-        if (hasCheckedData) return;
-
-        const cookies = new Cookies(null, { path: "/" });
-        const userData = cookies.get('pending_user_data');
+        // Fetch pending user data from cookies every time the component is accessed
+        const userData = cookiesRef.current.get('pending_user_data');
         
         if (userData) {
             try {
@@ -48,9 +49,7 @@ const BusinessVerificationContainer = () => {
             // No pending user data, redirect to login
             navigate('/login');
         }
-
-        setHasCheckedData(true);
-    }, [navigate, hasCheckedData]);
+    }, [navigate, location]);
 
     const handleBusinessVerificationSubmit = async (formValues) => {
         if (!pendingUserData) {
@@ -80,7 +79,7 @@ const BusinessVerificationContainer = () => {
                 setUser(pendingUserData);
 
                 // Clear pending user data cookie
-                cookies.remove('pending_user_data', { path: "/" });
+                cookiesRef.current.remove('pending_user_data', { path: "/" });
 
                 // Redirect to dashboard or first accessible route
                 const firstAccessibleRoute = findFirstAccessibleRoute(
@@ -101,25 +100,19 @@ const BusinessVerificationContainer = () => {
         }
     };
 
-    const handleLogout = () => {
-        // Clear all user-related cookies
-        const cookies = new Cookies(null, { path: "/" });
-        cookies.remove(constant.USER, { path: "/" });
-        cookies.remove(constant.ROLES, { path: "/" });
-        cookies.remove(constant.NAME_SMALL, { path: "/" });
-        cookies.remove('pending_user_data', { path: "/" });
-        cookies.remove(constant.AUTH_TOKEN, { path: "/" });
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem(constant.LASTPATH); // Clear last path on logout
-        delete axios.defaults.headers.common["Authorization"];
-        // Clear user context
-        setUser(null);
+    const handleLogout = async () => {
+        try {
+            // Call logout API endpoint
+            await axios.get(config.logout, {
+                withCredentials: true
+            });
+        } catch (error) {
+            console.error('Logout API error:', error);
+            // Continue with logout even if API fails
+        }
 
-        // Show logout message
-        toast.success('Logged out successfully');
-
-        // Redirect to login
-        navigate("/", { replace: true });
+        // Use the AuthContext logout function
+        logout();
     };
 
     if (!pendingUserData) {
@@ -145,9 +138,7 @@ const BusinessVerificationContainer = () => {
     return (
         <div style={{
             minHeight: '100vh',
-            backgroundColor: '#f3f4f6',
-            paddingTop: '40px',
-            paddingBottom: '40px'
+            backgroundColor: '#f3f4f6'
         }}>
             <BusinessVerification 
                 onSubmit={handleBusinessVerificationSubmit}

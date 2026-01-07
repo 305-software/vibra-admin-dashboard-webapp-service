@@ -10,6 +10,7 @@ import { Form, Button, Input, Select, message } from 'antd';
 import { LogoutOutlined } from '@ant-design/icons';
 import CustomModal from '../modal/Modal';
 import CustomButton from '../button/button';
+import { submitBusinessVerification } from '../server/businessVerification';
 import './businessVerification.css';
 
 // US States list
@@ -29,16 +30,51 @@ const BusinessVerification = ({ onSubmit, onLogout }) => {
     const [loading, setLoading] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
 
+    // Format phone number to (XXX) XXX-XXXX
+    const formatPhoneNumber = (value) => {
+        if (!value) return value;
+        
+        // Remove all non-digits
+        const phoneNumber = value.replace(/\D/g, '');
+        
+        // Format as (XXX) XXX-XXXX
+        if (phoneNumber.length <= 3) {
+            return phoneNumber;
+        } else if (phoneNumber.length <= 6) {
+            return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+        } else {
+            return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+        }
+    };
+
+    const handlePhoneChange = (e) => {
+        const formatted = formatPhoneNumber(e.target.value);
+        form.setFieldsValue({ phoneNumber: formatted });
+    };
+
     const handleSubmit = async (values) => {
         try {
             setLoading(true);
-            if (onSubmit) {
-                await onSubmit(values);
-            }
+            
+            // Clean up phone number - remove formatting for API submission
+            const cleanedValues = {
+                ...values,
+                phoneNumber: values.phoneNumber.replace(/\D/g, '')
+            };
+            
+            // Submit to backend via API function
+            const response = await submitBusinessVerification(cleanedValues);
+            
             message.success('Business verification submitted successfully');
             form.resetFields();
+            
+            // Call onSubmit callback if provided
+            if (onSubmit) {
+                await onSubmit(response);
+            }
         } catch (error) {
-            message.error('Failed to submit business verification');
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to submit business verification';
+            message.error(errorMessage);
             console.error('Error:', error);
         } finally {
             setLoading(false);
@@ -61,12 +97,13 @@ const BusinessVerification = ({ onSubmit, onLogout }) => {
     };
 
     return (
-        <div className="business-verification-container">
+        <div className="login-background">
+            <div className="business-verification-container">
             <div className="verification-header">
                 <div className="header-top">
-                    <div>
-                        <h2>Verify Your Business</h2>
-                        <p>Please provide your business details to complete the verification process</p>
+                    <div className="header-content">
+                        <h2>Business Verification</h2>
+                        <p>Let's verify your business and unlock full access</p>
                     </div>
                     <button 
                         className="logout-button"
@@ -109,17 +146,28 @@ const BusinessVerification = ({ onSubmit, onLogout }) => {
                 className="business-verification-form"
             >
                 <div className="form-section">
-                    <h3>Business Information</h3>
+                    <h3 className="section-title">Basic Information</h3>
                     
                     <Form.Item
                         name="businessName"
                         label="Business Name"
                         rules={[
-                            { required: true, message: 'Please enter your business name' }
+                            { required: true, message: 'Business name is required' }
                         ]}
                     >
                         <Input 
-                            placeholder="Enter your business name"
+                            placeholder="e.g., ABC Events Inc."
+                            size="large"
+                        />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="businessId"
+                        label="Tax ID / EIN"
+                        rules={[]}
+                    >
+                        <Input 
+                            placeholder="e.g., 12-3456789"
                             size="large"
                         />
                     </Form.Item>
@@ -128,82 +176,64 @@ const BusinessVerification = ({ onSubmit, onLogout }) => {
                         name="businessDescription"
                         label="Business Description"
                         rules={[
-                            { required: true, message: 'Please enter your business description' }
+                            { required: true, message: 'Business description is required' }
                         ]}
                     >
                         <Input.TextArea 
-                            placeholder="Describe your business"
-                            rows={4}
+                            placeholder="Tell us about your business..."
+                            rows={3}
                             size="large"
-                        />
-                    </Form.Item>
-
-                    <Form.Item
-                        name="businessId"
-                        label="Business ID"
-                        rules={[
-                            { required: true, message: 'Please enter your business ID' }
-                        ]}
-                    >
-                        <Input 
-                            placeholder="Enter your business ID"
-                            size="large"
-                        />
-                    </Form.Item>
-
-                    <Form.Item
-                        name="roleId"
-                        label="Role ID"
-                        rules={[
-                            { required: true, message: 'Please enter your role ID' }
-                        ]}
-                    >
-                        <Input 
-                            placeholder="Enter your role ID"
-                            size="large"
+                            maxLength={500}
+                            showCount
                         />
                     </Form.Item>
                 </div>
 
                 <div className="form-section">
-                    <h3>Contact Information</h3>
+                    <h3 className="section-title">Contact Information</h3>
                     
                     <Form.Item
                         name="phoneNumber"
                         label="Phone Number"
                         rules={[
-                            { required: true, message: 'Please enter your phone number' },
+                            { required: true, message: 'Phone number is required' },
                             {
-                                pattern: /^[0-9+\-\s()]+$/,
+                                pattern: /^\(\d{3}\) \d{3}-\d{4}$/,
                                 message: 'Please enter a valid phone number'
                             }
                         ]}
                     >
                         <Input 
-                            placeholder="Enter your phone number"
+                            placeholder="(786) 470-4126"
                             size="large"
+                            onChange={handlePhoneChange}
+                            maxLength={14}
                         />
                     </Form.Item>
+                </div>
 
+                <div className="form-section">
+                    <h3 className="section-title">Business Address</h3>
+                    
                     <Form.Item
                         name="address1"
-                        label="Address 1"
+                        label="Street Address"
                         rules={[
-                            { required: true, message: 'Please enter your address' }
+                            { required: true, message: 'Street address is required' }
                         ]}
                     >
                         <Input 
-                            placeholder="Enter street address"
+                            placeholder="e.g., 123 Main Street"
                             size="large"
                         />
                     </Form.Item>
 
                     <Form.Item
                         name="address2"
-                        label="Address 2"
+                        label="Apartment, Suite, etc."
                     >
                         <Input 
-                            placeholder="Apartment, suite, etc. (optional)"
+                            placeholder="Optional"
                             size="large"
                         />
                     </Form.Item>
@@ -212,11 +242,11 @@ const BusinessVerification = ({ onSubmit, onLogout }) => {
                         name="city"
                         label="City"
                         rules={[
-                            { required: true, message: 'Please enter your city' }
+                            { required: true, message: 'City is required' }
                         ]}
                     >
                         <Input 
-                            placeholder="Enter city"
+                            placeholder="e.g., New York"
                             size="large"
                         />
                     </Form.Item>
@@ -226,11 +256,11 @@ const BusinessVerification = ({ onSubmit, onLogout }) => {
                             name="state"
                             label="State"
                             rules={[
-                                { required: true, message: 'Please select a state' }
+                                { required: true, message: 'State is required' }
                             ]}
                         >
                             <Select 
-                                placeholder="Select state"
+                                placeholder="Select your state"
                                 size="large"
                                 options={US_STATES.map(state => ({
                                     label: state,
@@ -243,15 +273,15 @@ const BusinessVerification = ({ onSubmit, onLogout }) => {
                             name="zipCode"
                             label="ZIP Code"
                             rules={[
-                                { required: true, message: 'Please enter your ZIP code' },
+                                { required: true, message: 'ZIP code is required' },
                                 {
                                     pattern: /^\d{5}(-\d{4})?$/,
-                                    message: 'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)'
+                                    message: 'Invalid ZIP code format'
                                 }
                             ]}
                         >
                             <Input 
-                                placeholder="Enter ZIP code"
+                                placeholder="e.g., 10001"
                                 size="large"
                             />
                         </Form.Item>
@@ -259,24 +289,24 @@ const BusinessVerification = ({ onSubmit, onLogout }) => {
                 </div>
 
                 <div className="form-section">
-                    <h3>Social Media Links</h3>
+                    <h3 className="section-title">Social Media Presence</h3>
                     
                     <Form.Item
                         name="socialMediaLinks"
                         label="Social Media Links"
                         rules={[
-                            { required: true, message: 'Please enter at least one social media link' }
+                            { required: true, message: 'At least one social media link is required' }
                         ]}
                     >
                         <Input.TextArea 
-                            placeholder="Enter your social media links (one per line, e.g., https://facebook.com/yourpage)"
-                            rows={4}
+                            placeholder="Enter your social media profiles (one per line)&#10;e.g.,&#10;https://facebook.com/yourpage&#10;https://instagram.com/yourprofile"
+                            rows={3}
                             size="large"
                         />
                     </Form.Item>
                 </div>
 
-                <Form.Item className="form-actions">
+                <div className="form-actions">
                     <Button 
                         type="primary" 
                         htmlType="submit" 
@@ -284,10 +314,11 @@ const BusinessVerification = ({ onSubmit, onLogout }) => {
                         size="large"
                         className="submit-button"
                     >
-                        Submit Verification
+                        {loading ? 'Submitting...' : 'Submit Verification'}
                     </Button>
-                </Form.Item>
+                </div>
             </Form>
+            </div>
         </div>
     );
 };

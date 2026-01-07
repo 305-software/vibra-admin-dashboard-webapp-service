@@ -19,32 +19,36 @@ import config from "../../config";
  * @async
  * @function submitBusinessVerification
  * @param {object} formValues - The business verification data
- * @param {string} formValues.userId - The user ID
  * @param {string} formValues.businessName - The business name
  * @param {string} formValues.businessDescription - Description of the business
- * @param {string} formValues.businessId - The business ID
- * @param {string} formValues.roleId - The role ID
- * @param {string} formValues.phoneNumber - Contact phone number
- * @param {string} formValues.address - Business address
- * @param {string} formValues.socialMediaLinks - Social media links (comma-separated or newline-separated)
+ * @param {string} formValues.businessId - The business ID/Tax ID (optional)
+ * @param {string} formValues.phoneNumber - Contact phone number (digits only)
+ * @param {string} formValues.address1 - Street address
+ * @param {string} formValues.address2 - Apartment/Suite (optional)
+ * @param {string} formValues.city - City
+ * @param {string} formValues.state - State
+ * @param {string} formValues.zipCode - ZIP code
+ * @param {string} formValues.socialMediaLinks - Social media links (newline-separated)
  * @returns {Promise<object>} The response data from the server.
  * @throws {Error} Throws an error if the request fails.
  *
  * @example
  * const response = await submitBusinessVerification({
- *   userId: '123',
  *   businessName: 'My Business',
  *   businessDescription: 'A great business',
- *   businessId: 'BID123',
- *   roleId: 'RID123',
- *   phoneNumber: '+1234567890',
- *   address: '123 Main St',
- *   socialMediaLinks: 'https://facebook.com/mybusiness'
+ *   businessId: '12-3456789',
+ *   phoneNumber: '7864704126',
+ *   address1: '123 Main St',
+ *   address2: 'Suite 100',
+ *   city: 'Miami',
+ *   state: 'Florida',
+ *   zipCode: '33101',
+ *   socialMediaLinks: 'https://facebook.com/mybusiness\nhttps://instagram.com/mybusiness'
  * });
  */
 export async function submitBusinessVerification(formValues) {
     const response = await axios.post(
-        `${config.businessVerification || config.apiBaseURL}/verify-business`,
+        `${config.businessVerification}`,
         formValues
     );
     return response.data;
