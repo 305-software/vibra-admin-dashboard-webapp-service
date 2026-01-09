@@ -55,7 +55,7 @@ import styled from "styled-components";
 import Cookies from "universal-cookie";
 
 import Notification from "../assets/icons/notification.svg";
-import logo from "../assets/logo.png";
+import logo from "../assets/vibra_logo.png";
 import profile from "../assets/Profile.png";
 import unitedState from "../assets/unitedState.png";
 import Button from "../components/button/button";
@@ -217,7 +217,7 @@ function Header({ toggleSidebar, isOpen }) {
     <div className="headerContainer">
       <div className="logoContainer">
         <img src={logo} alt="logo" className="logo" />
-        <h1>{t("DREAM_EVENT")}</h1>
+        <h1>{t("VIBRA")}</h1>
       </div>
 
       <div className="profile-container">

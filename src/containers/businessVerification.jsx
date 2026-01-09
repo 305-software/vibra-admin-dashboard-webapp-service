@@ -6,6 +6,7 @@
  */
 import axios from "axios";
 import React, { useContext, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Cookies from "universal-cookie";
@@ -24,6 +25,7 @@ import { submitBusinessVerification } from '../components/server/businessVerific
  */
 const BusinessVerificationContainer = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const location = useLocation();
     const { logout } = useContext(AuthContext);
     const { setUser } = useContext(UserContext);
@@ -51,7 +53,7 @@ const BusinessVerificationContainer = () => {
         }
     }, [navigate, location]);
 
-    const handleBusinessVerificationSubmit = async (formValues) => {
+    const handleBusinessVerificationSubmit = async (response) => {
         if (!pendingUserData) {
             toast.error('Session expired. Please login again.');
             navigate('/login');
@@ -61,35 +63,23 @@ const BusinessVerificationContainer = () => {
         setLoading(true);
 
         try {
-            const verificationData = {
-                userId: pendingUserData.data.user._id,
-                businessName: formValues.businessName,
-                businessDescription: formValues.businessDescription,
-                businessId: formValues.businessId,
-                roleId: formValues.roleId,
-                phoneNumber: formValues.phoneNumber,
-                address: formValues.address,
-                socialMediaLinks: formValues.socialMediaLinks,
-            };
 
-            const response = await submitBusinessVerification(verificationData);
-
-            if (response && response.data) {
+            if (response && (response.status === 200)) {
                 // Update user context with verification complete
                 setUser(pendingUserData);
+
+                toast.success(t('BUSINESS_VERIFICATION_SUCCESS'));
 
                 // Clear pending user data cookie
                 cookiesRef.current.remove('pending_user_data', { path: "/" });
 
                 // Redirect to dashboard or first accessible route
                 const firstAccessibleRoute = findFirstAccessibleRoute(
-                    pendingUserData.data.user.rolePermission
+                    pendingUserData.user.rolePermission
                 );
-
-                toast.success(response.message || 'Business verification submitted successfully!');
                 navigate(firstAccessibleRoute);
             } else {
-                toast.error('Failed to submit business verification');
+                toast.error(t('BUSINESS_VERIFICATION_FAILED'));
             }
         } catch (error) {
             const errorMessage = error.response?.data?.message || 'Failed to submit business verification';

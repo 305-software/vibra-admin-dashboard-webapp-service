@@ -72,7 +72,9 @@ function Button({
   variant,
   featureName,
   permissionName,
-  loading // New loading prop
+  loading, // New loading prop
+  children,  // New children prop for custom content
+  className  // New className prop
 }) {
   // Check permission
   const isAllowed =
@@ -80,11 +82,16 @@ function Button({
       ? hasPermission(featureName, permissionName)
       : true;
 
+  // Combine classes: always include event-speaker-button, plus any custom className
+  const buttonClassName = className 
+    ? `event-speaker-button ${className}` 
+    : "event-speaker-button";
+
   // Render button with disabled state based on permission
   return (
     <button
       type={type}
-      className="event-speaker-button"
+      className={buttonClassName}
       style={style}
       variant={variant}
       onClick={isAllowed && !loading ? onClick : undefined} // Only call onClick if allowed and not loading
@@ -101,6 +108,8 @@ function Button({
           />
         </div>
 
+      ) : children ? (
+        children
       ) : (
         name
       )}

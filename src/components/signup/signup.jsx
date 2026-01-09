@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Cookies from "universal-cookie";
 
-import logo from "../../assets/logo.png";
+import logo from "../../assets/vibra_logo.png";
 import { findFirstAccessibleRoute } from '../../layout/sidebarData';
 import * as constant from "../../utlis/constant";
 import Button from '../button/button';
@@ -120,7 +120,7 @@ function Signup() {
         });
 
         // Check if user is admin
-        if (!isAdmin(user.rolePermission)) {
+        if (!isAdmin(user.rolePermission) && user.verificationStatusLevel === 'none') {
           // Redirect non-admin users to business verification
           cookies.set('pending_user_data', JSON.stringify(response.data), {
             path: "/",
@@ -173,7 +173,7 @@ function Signup() {
           <Col md={8} lg={6} className="login-box">
             <div className="d-flex justify-content-center event-logo mb-4">
               <img src={logo} alt="logo" width="40" height="40" />
-              <h2 className="logo-login">{t("DREAM_EVENT")}</h2>
+              <h2 className="logo-login">{t("VIBRA")}</h2>
             </div>
             <h4 className="text-center login-account">{t("CREATE_AN_ACCOUNT")}</h4>
             <Form style={{ marginTop: '30px' }} onSubmit={handleSubmit}>
@@ -218,7 +218,7 @@ function Signup() {
                 </div>
               </Form.Group>
               <div className='d-flex justify-content-between'>
-                <div onClick={() => setShowSignup(true)}>
+                <div className='mb-3' onClick={() => setShowSignup(true)}>
                   <span className='signup'>{t("SIGN_IN")}</span>
                 </div>
               </div>
@@ -227,16 +227,6 @@ function Signup() {
                   type="submit"
                   className="sign-in-btn"
                   name={loading ? "Creating account..." : t("SIGN_UP")}
-                  disabled={loading}
-                />
-              </div>
-              {/* Google Sign-Up Button */}
-              <div className="d-grid gap-2" style={{ marginTop: 16 }}>
-                <Button
-                  type="button"
-                  className="google-sign-in-btn"
-                  name={t("SIGN_UP_WITH_GOOGLE")}
-                  onClick={() => toast.info(t("GOOGLE_SIGN_IN_NOT_IMPLEMENTED"))}
                   disabled={loading}
                 />
               </div>

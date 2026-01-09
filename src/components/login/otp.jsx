@@ -50,7 +50,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Cookies from "universal-cookie";
 
-import logo from "../../assets/logo.png";
+import logo from "../../assets/vibra_logo.png";
 import Button from '../../components/button/button';
 import * as constant from "../../utlis/constant";
 import { UserContext } from "../context/userContext";
@@ -342,7 +342,7 @@ function Otp() {
                     <Col md={8} lg={6} className="login-box">
                         <div className="d-flex justify-content-center event-logo mb-4">
                             <img src={logo} alt="logo" width="40" height="40" />
-                            <h2 className="logo-login">{t("DREAM_EVENT")}</h2>
+                            <h2 className="logo-login">{t("VIBRA")}</h2>
                         </div>
                         <h4 className="text-center login-account">{t("OTP_VERIFICATION")}</h4>
                         <p className="text-center details-welcome mt-2">

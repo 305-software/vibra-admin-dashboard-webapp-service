@@ -109,7 +109,7 @@
   "EMAIL_IS_REQUIRED": "Email is required",
   "EMAIL_SMALL": "Email",
   "OTP_SEND_TO_MAIL": "OTP sent in mail",
-  "DREAM_EVENT": "Dream Events",
+  "VIBRA": "Vibra",
   "FORGOT_PASSWORD": "Forgot Password",
   "FORGOT_PASSWORD_CONTENT": "Select which contact details should we use to reset your password",
   "SUBMIT": "Submit",
@@ -196,6 +196,9 @@
   "TICKET_PRICE": "Ticket Price",
   "ROLE_SMALL": "Role",
   "SIGN_IN": "Sign in",
+  "SIGN_UP": "Create Account",
+  "SIGN_IN_WITH_GOOGLE": "Sign in with Google",
+  "GOOGLE_SIGN_IN_NOT_IMPLEMENTED": "Google Sign-in is not yet implemented",
   "SIGNING_IN ": "Signing in...",
   "EVENT_DELETED_SUCCESSFULLY": "Event Deleted Successfully!",
   "ROLE_DELETED_SUCCESSFULLY": "Role Deleted Successfully!",
@@ -275,7 +278,9 @@
   "NEW_CODE_SENT_SUCCESSFULLY": "New code sent successfully",
   "FAILED_TO_RESEND_CODE": "Failed to resend code",
   "IP_VERIFICATION_SECURITY_NOTICE": "This is an additional security measure to protect your account.",
-  "REDIRECTING_TO_LOGIN": "Redirecting to login..."
+  "REDIRECTING_TO_LOGIN": "Redirecting to login...",
+  "BUSINESS_VERIFICATION_SUCCESS": "Business verification submitted successfully",
+  "BUSINESS_VERIFICATION_FAILED": "Business verification failed. Please try again."
 }
 
 

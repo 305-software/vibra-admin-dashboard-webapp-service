@@ -119,6 +119,18 @@ export async function loginResponse(formValues) {
     return response.data;
 }
 
+export async function handleGmailAuth(formValues) {
+    let deviceIP = await getDeviceIp();    
+
+    const response = await axios.post(`${config.dashboardGmailAuth}`, formValues, {
+        headers: {
+            'x-forwarded-for': deviceIP,
+            'x-device-fingerprint': generateDeviceFingerprint(),
+        }
+    });
+    return response.data;
+}
+
 async function getDeviceIp() {
     try {
         const response_ip = await fetch('https://api.ipify.org?format=json');

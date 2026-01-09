@@ -40,6 +40,7 @@ const combine = {
   upcomingList: config.baseURL + "/upcoming-list",
   dashboardlogin: config.baseURL + "/dashboard-login",
   dashboardSignup: config.baseURL + "/dashboard-signup",
+  dashboardGmailAuth: config.baseURL + "/dashboard-gmail-auth",
   refreshTokenUrl: config.baseURL + "/refresh-token",
   rolePermission: config.baseURL + "/role-permission",
   roleList: config.baseURL + "/role",

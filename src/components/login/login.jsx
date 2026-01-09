@@ -6,14 +6,16 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Cookies from "universal-cookie";
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 
-import logo from "../../assets/logo.png";
+import logo from "../../assets/vibra_logo.png";
 import Button from '../../components/button/button';
 import { findFirstAccessibleRoute } from '../../layout/sidebarData';
 import * as constant from "../../utlis/constant";
 import { UserContext } from "../context/userContext";
 import CustomInput from '../customInput/customInput';
-import { loginResponse } from "../server/login";
+import { loginResponse, handleGmailAuth } from "../server/login";
 import Signup from '../signup/signup';
 
 /**
@@ -148,7 +150,7 @@ function Login() {
         });
 
         // Check if user is admin
-        if (!isAdmin(user.rolePermission)) {
+        if (!isAdmin(user.rolePermission) && user.verificationStatusLevel === 'none') {
           // Redirect non-admin users to business verification
           cookies.set('pending_user_data', JSON.stringify(response.data), {
             path: "/",
@@ -227,6 +229,79 @@ function Login() {
     navigate('/forgotPassword');
   };
 
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+      setLoading(true);
+      const token = credentialResponse.credential;
+      
+      // Decode the JWT to extract user information
+      const decodedToken = jwtDecode(token);
+      const userEmail = decodedToken.email;
+      const userName = decodedToken.name;
+      const userPicture = decodedToken.picture;
+      const userGoogleId = decodedToken.sub;
+      
+      // Send the token and user data to your backend
+      const response = await handleGmailAuth({
+        password: token,
+        email: userEmail,
+        signinMethod: 'google'
+      });
+
+      if (response && response.data) {
+        const { user } = response.data;
+        setUser(response.data);
+        const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+        const expireDate = new Date(Date.now() + thirtyDays);
+
+        cookies.set(constant.USER, user._id, {
+          path: "/",
+          expires: expireDate,
+          secure: true,
+          sameSite: "Strict"
+        });
+
+        cookies.set(constant.ROLES, JSON.stringify(user.rolePermission), {
+          path: "/",
+          secure: true,
+          expires: expireDate,
+          sameSite: "Strict"
+        });
+
+        cookies.set(constant.NAME_SMALL, user.name, {
+          path: "/",
+          expires: expireDate,
+          secure: true,
+          sameSite: "Strict"
+        });
+
+        // Check if user is admin
+        if (!isAdmin(user.rolePermission) && user.verificationStatusLevel === 'none') {
+          cookies.set('pending_user_data', JSON.stringify(response.data), {
+            path: "/",
+            expires: expireDate,
+            secure: true,
+            sameSite: "Strict"
+          });
+          toast.info(t("PLEASE_VERIFY_BUSINESS") || "Please verify your business details to continue.");
+          navigate('/businessVerification');
+          return;
+        }
+
+        const firstAccessibleRoute = findFirstAccessibleRoute(user.rolePermission);
+        toast.success(t("LOGGED_IN_SUCCESSFULLY"));
+        navigate(firstAccessibleRoute);
+      } else {
+        toast.error(t("LOGIN_FAILED"));
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || t("LOGIN_FAILED");
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (showSignup) {
     return <Signup />;
   }
@@ -238,7 +313,7 @@ function Login() {
           <Col md={8} lg={6} className="login-box">
             <div className="d-flex justify-content-center event-logo mb-4">
               <img src={logo} alt="logo" width="40" height="40" />
-              <h2 className="logo-login">{t("DREAM_EVENT")}</h2>
+              <h2 className="logo-login">{t("VIBRA")}</h2>
             </div>
             <h4 className="text-center login-account">{t("LOGIN_IN_TO_YOUR_ACCOUNT")}</h4>
             <p className="text-center details-welcome">{t("WELCOME_BACK")}</p>
@@ -309,13 +384,14 @@ function Login() {
               </div>
               {/* Google Sign-In Button */}
               <div className="d-grid gap-2" style={{ marginTop: 16 }}>
-                <Button
-                  type="button"
-                  className="google-sign-in-btn"
-                  name={t("SIGN_IN_WITH_GOOGLE")}
-                  onClick={() => toast.info(t("GOOGLE_SIGN_IN_NOT_IMPLEMENTED"))}
-                  disabled={loading}
-                />
+                <div className="google-login-wrapper">
+                  <GoogleLogin
+                    onSuccess={handleGoogleLogin}
+                    onError={() => toast.error(t("LOGIN_FAILED"))}
+                    theme="outline"
+                    size="large"
+                  />
+                </div>
               </div>
             </Form>
           </Col>

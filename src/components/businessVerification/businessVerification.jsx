@@ -5,11 +5,14 @@
  * It includes fields for business information, contact details, and social media links.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Form, Button, Input, Select, message } from 'antd';
 import { LogoutOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import CustomModal from '../modal/Modal';
 import CustomButton from '../button/button';
+import { UserContext } from '../context/userContext';
 import { submitBusinessVerification } from '../server/businessVerification';
 import './businessVerification.css';
 
@@ -29,6 +32,9 @@ const BusinessVerification = ({ onSubmit, onLogout }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const { user } = useContext(UserContext);
+    const navigate = useNavigate();
+    const { t } = useTranslation();
 
     // Format phone number to (XXX) XXX-XXXX
     const formatPhoneNumber = (value) => {
@@ -56,17 +62,37 @@ const BusinessVerification = ({ onSubmit, onLogout }) => {
         try {
             setLoading(true);
             
+            // Get email from user context
+            const userEmail = user?.user?.email || '';
+            const userId = user?.user?._id || '';
+            
             // Clean up phone number - remove formatting for API submission
+            // Convert socialMediaLinks string to array by splitting on newlines
             const cleanedValues = {
-                ...values,
-                phoneNumber: values.phoneNumber.replace(/\D/g, '')
+                businessName: values.businessName,
+                businessDescription: values.businessDescription,
+                businessId: userId,
+                phoneNumber: values.phoneNumber.replace(/\D/g, ''),
+                email: userEmail,
+                address: {
+                    streetAddress: values.streetAddress,
+                    address2: values.address2,
+                    city: values.city,
+                    state: values.state,
+                    zipCode: values.zipCode
+                },
+                socialMediaLinks: values.socialMediaLinks
+                    .split('\n')
+                    .map(link => link.trim())
+                    .filter(link => link.length > 0)
             };
             
             // Submit to backend via API function
             const response = await submitBusinessVerification(cleanedValues);
-            
-            message.success('Business verification submitted successfully');
-            form.resetFields();
+
+            if (response && response.status === 200) {
+                form.resetFields();
+            }
             
             // Call onSubmit callback if provided
             if (onSubmit) {
@@ -216,7 +242,7 @@ const BusinessVerification = ({ onSubmit, onLogout }) => {
                     <h3 className="section-title">Business Address</h3>
                     
                     <Form.Item
-                        name="address1"
+                        name="streetAddress"
                         label="Street Address"
                         rules={[
                             { required: true, message: 'Street address is required' }
