@@ -13,11 +13,11 @@
  * )
  */
 
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState, useCallback } from 'react';
 import Cookies from "universal-cookie";
 
 import * as constant from "../../utlis/constant";
-import { loginResponse } from "../server/login";
+import { getDashboardUserById } from "../server/userContext";
 
 export const UserContext = createContext();
 
@@ -31,7 +31,7 @@ const UserProvider = ({ children }) => {
             
             if (userId) {
                 try {
-                    const userData = await loginResponse(userId);
+                    const userData = await getDashboardUserById(userId);
                     setUser(userData);
                 } catch (error) {
                     console.error("Error fetching user data:", error);
@@ -45,8 +45,41 @@ const UserProvider = ({ children }) => {
         fetchUserData();
     }, []);
 
+    // Check if user is admin
+    const isAdmin = useCallback(() => {
+        const cookies = new Cookies();
+        const roles = cookies.get(constant.ROLES);
+
+        // Primary check: use roles from cookies (available immediately)
+        if (roles && Array.isArray(roles) && roles.length > 0) {
+            return roles[0]?.roleName === 'Admin' || roles[0]?.roleName === 'SuperAdmin';
+        }
+
+        // Secondary check: try user context data (loaded asynchronously)
+        if (user) {
+            let rolePermission = null;
+            
+            // Try different possible paths to rolePermission
+            if (user?.user?.rolePermission) {
+                rolePermission = user.user.rolePermission;
+            } else if (user?.data?.user?.rolePermission) {
+                rolePermission = user.data.user.rolePermission;
+            }
+            
+            if (rolePermission) {
+                // Support both array and object formats
+                if (Array.isArray(rolePermission)) {
+                    return rolePermission.some(role => role.roleName === 'SuperAdmin' || role.roleName === 'Admin');
+                }
+                return rolePermission.roleName === 'SuperAdmin' || rolePermission.roleName === 'Admin';
+            }
+        }
+        
+        return false;
+    }, [user]);
+
     return (
-        <UserContext.Provider value={{ user, setUser }}>
+        <UserContext.Provider value={{ user, setUser, isAdmin }}>
             {children}
         </UserContext.Provider>
     );

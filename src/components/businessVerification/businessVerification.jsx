@@ -72,6 +72,8 @@ const BusinessVerification = ({ onSubmit, onLogout }) => {
                 businessName: values.businessName,
                 businessDescription: values.businessDescription,
                 businessId: userId,
+                ownerFirstName: values.ownerFirstName,
+                ownerLastName: values.ownerLastName,
                 phoneNumber: values.phoneNumber.replace(/\D/g, ''),
                 email: userEmail,
                 address: {
@@ -186,6 +188,34 @@ const BusinessVerification = ({ onSubmit, onLogout }) => {
                             size="large"
                         />
                     </Form.Item>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        <Form.Item
+                            name="ownerFirstName"
+                            label="Owner First Name"
+                            rules={[
+                                { required: true, message: 'Owner first name is required' }
+                            ]}
+                        >
+                            <Input 
+                                placeholder="e.g., John"
+                                size="large"
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="ownerLastName"
+                            label="Owner Last Name"
+                            rules={[
+                                { required: true, message: 'Owner last name is required' }
+                            ]}
+                        >
+                            <Input 
+                                placeholder="e.g., Doe"
+                                size="large"
+                            />
+                        </Form.Item>
+                    </div>
 
                     <Form.Item
                         name="businessId"

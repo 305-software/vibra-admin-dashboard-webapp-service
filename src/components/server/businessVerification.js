@@ -22,6 +22,8 @@ import config from "../../config";
  * @param {string} formValues.businessName - The business name
  * @param {string} formValues.businessDescription - Description of the business
  * @param {string} formValues.businessId - The business ID/Tax ID (optional)
+ * @param {string} formValues.ownerFirstName - Owner's first name
+ * @param {string} formValues.ownerLastName - Owner's last name
  * @param {string} formValues.phoneNumber - Contact phone number (digits only)
  * @param {string} formValues.address1 - Street address
  * @param {string} formValues.address2 - Apartment/Suite (optional)
@@ -68,7 +70,7 @@ export async function submitBusinessVerification(formValues) {
  */
 export async function getBusinessVerificationStatus(userId) {
     const response = await axios.get(
-        `${config.businessVerification || config.apiBaseURL}/verify-business/${userId}`
+        `${config.businessVerification || config.apiBaseURL}/${userId}`
     );
     return response.data;
 }

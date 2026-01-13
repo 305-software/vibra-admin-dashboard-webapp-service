@@ -37,19 +37,21 @@
 
 
 
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from "react-i18next";
+import { UserContext } from '../context/userContext';
 
 import Card from '../card/HeaderCard';
 
 function EventHead() {
     const { t } = useTranslation();
+    const { user, isAdmin } = useContext(UserContext);
 
     return (
         <div className='mb-3'>
             <Card>
                 <div className='d-flex justify-content-between align-items-baseline'>
-                    <h3>{t("SETTINGS")} </h3>
+                    <h3>{t(isAdmin() ? "SETTINGS" : "PROFILE")} </h3>
 
                 </div>
             </Card>

@@ -40,16 +40,16 @@ function App() {
           <Route path="/forgotPassword" element={<UserProvider><ForgotPassword /></UserProvider>} />
           <Route path="/resetPassword" element={<UserProvider><ResetPassword /></UserProvider>} />
 
-          <Route path="dashboard" element={<ProtectedRoute><Main><Dashboard /></Main></ProtectedRoute>} />
-          <Route path="eventList" element={<ProtectedRoute><Main><EventList /></Main></ProtectedRoute>} />
-          <Route path="/eventList/createEvent/:id" element={<ProtectedRoute><Main><EditEvent /></Main></ProtectedRoute>} />
-          <Route path="/eventList/createEvent" element={<ProtectedRoute><Main><CreateEvent /></Main></ProtectedRoute>} />
-          <Route path="booking" element={<ProtectedRoute><Main><Booking /></Main></ProtectedRoute>} />
-          <Route path="/eventList/viewDetails/:id" element={<ProtectedRoute><Main><ViewDetails /></Main></ProtectedRoute>} />
-          <Route path="customer" element={<ProtectedRoute><Main><Customer /></Main></ProtectedRoute>} />
-          <Route path="transaction" element={<ProtectedRoute><Main><Transaction /></Main></ProtectedRoute>} />
-          <Route path="settings" element={<ProtectedRoute><Main><Setting /></Main></ProtectedRoute>} />
-          <Route path="analytics" element={<ProtectedRoute><Main><Analytics /></Main></ProtectedRoute>} />
+          <Route path="dashboard" element={<ProtectedRoute><UserProvider><Main><Dashboard /></Main></UserProvider></ProtectedRoute>} />
+          <Route path="eventList" element={<ProtectedRoute><UserProvider><Main><EventList /></Main></UserProvider></ProtectedRoute>} />
+          <Route path="/eventList/createEvent/:id" element={<ProtectedRoute><UserProvider><Main><EditEvent /></Main></UserProvider></ProtectedRoute>} />
+          <Route path="/eventList/createEvent" element={<ProtectedRoute><UserProvider><Main><CreateEvent /></Main></UserProvider></ProtectedRoute>} />
+          <Route path="booking" element={<ProtectedRoute><UserProvider><Main><Booking /></Main></UserProvider></ProtectedRoute>} />
+          <Route path="/eventList/viewDetails/:id" element={<ProtectedRoute><UserProvider><Main><ViewDetails /></Main></UserProvider></ProtectedRoute>} />
+          <Route path="customer" element={<ProtectedRoute><UserProvider><Main><Customer /></Main></UserProvider></ProtectedRoute>} />
+          <Route path="transaction" element={<ProtectedRoute><UserProvider><Main><Transaction /></Main></UserProvider></ProtectedRoute>} />
+          <Route path="settings" element={<ProtectedRoute><UserProvider><Main><Setting /></Main></UserProvider></ProtectedRoute>} />
+          <Route path="analytics" element={<ProtectedRoute><UserProvider><Main><Analytics /></Main></UserProvider></ProtectedRoute>} />
         </Routes>
 
         {/* Global Toast Notification Container */}

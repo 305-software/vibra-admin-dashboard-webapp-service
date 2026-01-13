@@ -1,3 +1,4 @@
+import { getBusinessVerificationStatus } from "./components/server/businessVerification";
 
 
 const base = {
@@ -64,7 +65,9 @@ const combine = {
   verifyIp: config.baseURL + "/verify-otp-new-ip",
   resendIpCode: config.baseURL + "/resend-ip-code",
   imageUrl: config.baseURL,
-  businessVerification: config.baseURL + "/verify-business"
+  businessVerification: config.baseURL + "/verify-business",
+  getDashboardUserById: config.baseURL + "/get-dashboard-user-by-id",
+  getBusinessVerificationStatus: config.baseURL + "/verify-business",
 
 
 };
