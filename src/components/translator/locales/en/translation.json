@@ -317,6 +317,8 @@
   "SAVED_SUCCESSFULLY": "Saved successfully",
   "FAILED_TO_SAVE": "Failed to save",
   "USERS": "Users",
+  "SUBSCRIPTIONS": "Subscriptions",
+  "PAYMENT_METHODS": "Payment Methods",
   "MASTER": "Master"
 }
 

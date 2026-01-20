@@ -293,5 +293,7 @@
     "SAVED_SUCCESSFULLY": "保存成功",
     "FAILED_TO_SAVE": "保存失败",
     "USERS": "用户",
+    "SUBSCRIPTIONS": "订阅",
+    "PAYMENT_METHODS": "支付方式",
     "MASTER": "主人"
 }

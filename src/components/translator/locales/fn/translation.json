@@ -291,5 +291,7 @@
   "SAVED_SUCCESSFULLY": "Enregistré avec succès",
   "FAILED_TO_SAVE": "Échec de l'enregistrement",
   "USERS": "Utilisateurs",
+  "SUBSCRIPTIONS": "Abonnements",
+  "PAYMENT_METHODS": "Méthodes de Paiement",
   "MASTER": "Maître"
 }

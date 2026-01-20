@@ -5,7 +5,7 @@
  * It includes fields for business information, contact details, and social media links.
  */
 
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, use } from 'react';
 import { Form, Button, Input, Select, message } from 'antd';
 import { LogoutOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -63,8 +63,8 @@ const BusinessVerification = ({ onSubmit, onLogout }) => {
             setLoading(true);
             
             // Get email from user context
-            const userEmail = user?.user?.email || '';
-            const userId = user?.user?._id || '';
+            const userEmail = user?.data?.user?.email || user?.user?.email || '';
+            const userId = user?.data?.user?._id || user?.user?._id || '';
             
             // Clean up phone number - remove formatting for API submission
             // Convert socialMediaLinks string to array by splitting on newlines

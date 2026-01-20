@@ -34,6 +34,8 @@ import RoleManagement from '../roleManagement/roleManage';
 import UserTable from '../user/userTable';
 import Master from "./Master/index"
 import BusinessInformation from './BusinessInformation';
+import Subscriptions from '../subscription/Subscriptions';
+import PaymentMethods from '../payment/PaymentMethods';
 import './setting.css';
 
 function LeftTabsExample() {
@@ -61,9 +63,17 @@ function LeftTabsExample() {
                   </Nav.Item>
                 </>
               ) : (
+                <>
                 <Nav.Item>
                   <Nav.Link eventKey="first">{t("BUSINESS_INFORMATION")}</Nav.Link>
                 </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="second">{t("SUBSCRIPTIONS")}</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="third">{t("PAYMENT_METHODS")}</Nav.Link>
+                </Nav.Item>
+                </>                
               )}
             </Nav>
           </Col>
@@ -76,7 +86,11 @@ function LeftTabsExample() {
                   <Tab.Pane eventKey="third"><Master /></Tab.Pane>
                 </>
               ) : (
+                <>
                 <Tab.Pane eventKey="first"><BusinessInformation /></Tab.Pane>
+                <Tab.Pane eventKey="second"><Subscriptions /></Tab.Pane>
+                <Tab.Pane eventKey="third"><PaymentMethods /></Tab.Pane>
+                </>
               )}
             </Tab.Content>
           </Col>

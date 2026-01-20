@@ -1,0 +1,136 @@
+.payment-methods-container {
+  padding: 24px;
+  background-color: #fff;
+  border-radius: 8px;
+}
+
+.payment-methods-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.payment-methods-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+}
+
+.payment-methods-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.payment-methods-table .ant-table {
+  border-radius: 8px;
+}
+
+.payment-methods-table .ant-table-thead > tr > th {
+  background-color: #fafafa;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.payment-methods-table .ant-table-tbody > tr:hover > td {
+  background-color: #fafafa;
+}
+
+.card-type-badge {
+  display: inline-block;
+  background-color: #e6f7ff;
+  color: #1890ff;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.default-badge {
+  display: inline-block;
+  background-color: #f5f5f5;
+  color: #999;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.default-badge.active {
+  background-color: #f6ffed;
+  color: #52c41a;
+}
+
+.ant-modal-header {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ant-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.ant-form-item-label > label {
+  color: #333;
+  font-weight: 500;
+}
+
+.stripe-card-element {
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  padding: 12px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+}
+
+.stripe-card-element:hover {
+  border-color: #40a9ff;
+}
+
+.stripe-card-element:focus-within {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.ant-input,
+.ant-select {
+  border-radius: 4px;
+}
+
+.ant-input:focus,
+.ant-input:hover {
+  border-color: #1890ff;
+}
+
+.ant-input:disabled {
+  background-color: #fafafa;
+  color: #999;
+}
+
+.ant-btn-primary {
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.ant-btn-primary:hover {
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .payment-methods-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .payment-methods-header h2 {
+    width: 100%;
+  }
+
+  .payment-methods-header button {
+    width: 100%;
+  }
+}

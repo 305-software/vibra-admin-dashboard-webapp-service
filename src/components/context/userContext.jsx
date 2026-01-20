@@ -60,8 +60,8 @@ const UserProvider = ({ children }) => {
             let rolePermission = null;
             
             // Try different possible paths to rolePermission
-            if (user?.user?.rolePermission) {
-                rolePermission = user.user.rolePermission;
+            if (user?.user?.rolePermission || user?.data?.user?.rolePermission) {
+                rolePermission = user.user.rolePermission || user.data.user.rolePermission;
             } else if (user?.data?.user?.rolePermission) {
                 rolePermission = user.data.user.rolePermission;
             }

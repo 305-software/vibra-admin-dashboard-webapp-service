@@ -10,6 +10,8 @@
     "@fullcalendar/react": "^6.1.18",
     "@react-oauth/google": "^0.13.4",
     "@reduxjs/toolkit": "^2.4.0",
+    "@stripe/react-stripe-js": "^5.4.1",
+    "@stripe/stripe-js": "^8.6.1",
     "antd": "^5.21.4",
     "apexcharts": "^5.2.0",
     "axios": "^1.7.7",

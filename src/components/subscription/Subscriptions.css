@@ -1,0 +1,137 @@
+.subscriptions-container {
+  padding: 40px 20px;
+}
+
+.subscriptions-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.subscriptions-header h2 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.subscriptions-header p {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+}
+
+.subscription-card {
+  border-radius: 8px;
+  border: 2px solid #f0f0f0;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.subscription-card:hover {
+  border-color: #1890ff;
+  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.15);
+}
+
+.subscription-card.highlighted {
+  border-color: #1890ff;
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(24, 144, 255, 0.25);
+}
+
+.subscription-card.highlighted::before {
+  content: 'Most Popular';
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1890ff;
+  color: white;
+  padding: 4px 16px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.plan-header {
+  margin-bottom: 20px;
+}
+
+.plan-name {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.plan-description {
+  font-size: 14px;
+  color: #999;
+  margin: 0;
+}
+
+.plan-price {
+  text-align: center;
+  margin: 24px 0;
+  padding: 20px 0;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.price {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1890ff;
+}
+
+.period {
+  font-size: 14px;
+  color: #999;
+  margin-left: 4px;
+}
+
+.plan-button {
+  margin: 24px 0;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.plan-features {
+  flex-grow: 1;
+}
+
+.features-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 12px 0;
+}
+
+.plan-features ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.plan-features li {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.plan-features li:last-child {
+  margin-bottom: 0;
+}
+
+.feature-icon {
+  color: #52c41a;
+  margin-right: 8px;
+  font-size: 14px;
+  flex-shrink: 0;
+}

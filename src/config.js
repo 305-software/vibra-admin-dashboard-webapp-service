@@ -1,4 +1,5 @@
 import { getBusinessVerificationStatus } from "./components/server/businessVerification";
+import { verifyPhone } from "./components/server/verifyPhone";
 
 
 const base = {
@@ -68,8 +69,13 @@ const combine = {
   businessVerification: config.baseURL + "/verify-business",
   getDashboardUserById: config.baseURL + "/get-dashboard-user-by-id",
   getBusinessVerificationStatus: config.baseURL + "/verify-business",
-
-
+  verifyPhone: config.baseURL + "/verify-phone-number",
+  sendPhoneOtp: config.baseURL + "/send-verification-code-phone-number",
+  sendEmailLink: config.baseURL + "/get-verify-email-link",
+  stripe_setup_intent: config.baseURL + "/stripe/setup-intent",
+  stripe_add_payment_method: config.baseURL + "/stripe/payment-method",
+  stripe_list_payment_methods: config.baseURL + "/stripe/payment-methods-list",
+  stripe_delete_payment_method: config.baseURL + "/stripe/payment-method",
 };
 
 export default jsonConcat(config, combine);

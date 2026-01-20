@@ -4,27 +4,21 @@ import { CheckCircleFilled, ExclamationCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next';
 import { UserContext } from '../context/userContext';
 import { getBusinessVerificationStatus, updateBusinessVerification } from '../server/businessVerification';
+import { verifyPhone, sendPhoneOtp, verifyEmail, sendEmailLink } from '../server/verifyPhone';
 import Card from '../card/tableCard';
-
-const US_STATES = [
-  'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut',
-  'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa',
-  'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan',
-  'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire',
-  'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio',
-  'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota',
-  'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia',
-  'Wisconsin', 'Wyoming'
-];
 
 const BusinessInformation = () => {
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [verifiedFields, setVerifiedFields] = useState({});
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [verifyCode, setVerifyCode] = useState('');
   const [verifyLoading, setVerifyLoading] = useState(false);
+  const [lastOtpTime, setLastOtpTime] = useState(null);
+  const [otpCountdown, setOtpCountdown] = useState(0);
+  const [currentVerifyField, setCurrentVerifyField] = useState(null);
+  const [lastEmailOtpTime, setLastEmailOtpTime] = useState(null);
+  const [emailOtpCountdown, setEmailOtpCountdown] = useState(0);
   const { t } = useTranslation();
   const { user } = useContext(UserContext);
 
@@ -58,6 +52,28 @@ const BusinessInformation = () => {
     );
   };
 
+  // Countdown timer for OTP resend
+  useEffect(() => {
+    let interval;
+    if (otpCountdown > 0) {
+      interval = setInterval(() => {
+        setOtpCountdown(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [otpCountdown]);
+
+  // Countdown timer for email OTP resend
+  useEffect(() => {
+    let interval;
+    if (emailOtpCountdown > 0) {
+      interval = setInterval(() => {
+        setEmailOtpCountdown(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [emailOtpCountdown]);
+
   // Fetch user business data on component mount
   useEffect(() => {
     const fetchBusinessData = async () => {
@@ -73,6 +89,7 @@ const BusinessInformation = () => {
               ownerFirstName: response.data.user.businessInfo.ownerInfo?.info?.firstName || '',
               ownerLastName: response.data.user.businessInfo.ownerInfo?.info?.lastName || '',
               businessDescription: response.data.user.businessInfo.businessDescriptionInfo.description,
+              email: response.data.user.email || '',
               phoneNumber: response.data.user.businessInfo.phoneNumberInfo.phoneNumber ? formatPhoneNumber(response.data.user.businessInfo.phoneNumberInfo.phoneNumber) : '',
               streetAddress: response.data.user.businessInfo.addressInfo?.address.street,
               address2: response.data.user.businessInfo.addressInfo?.address.address2,
@@ -89,6 +106,7 @@ const BusinessInformation = () => {
               ownerFirstName: response.data.user.businessInfo.ownerInfo?.isVerified,
               ownerLastName: response.data.user.businessInfo.ownerInfo?.isVerified,
               businessDescription: response.data.user.businessInfo.businessDescriptionInfo.isVerified,
+              email: response.data.user.emailVerified,
               phoneNumber: response.data.user.businessInfo.phoneNumberInfo.isVerified,
               streetAddress: response.data.user.businessInfo.addressInfo?.isVerified,
               address2: response.data.user.businessInfo.addressInfo?.isVerified,
@@ -134,42 +152,80 @@ const BusinessInformation = () => {
     }
   };
 
+  // Extract only digits from phone number for API calls (Twilio format)
+  const cleanPhoneNumber = (phoneNumber) => {
+    const digits = phoneNumber.replace(/\D/g, '');
+    return `+1${digits}`;
+  };
+
   const handlePhoneChange = (e) => {
     const formatted = formatPhoneNumber(e.target.value);
     form.setFieldsValue({ phoneNumber: formatted });
   };
 
-  const handleVerifyPhone = () => {
+  const handleVerifyPhone = async () => {
     const phoneNumber = form.getFieldValue('phoneNumber');
     if (!phoneNumber || phoneNumber.length < 14) {
       message.error('Please enter a valid phone number');
       return;
     }
-    // Show verification modal
-    setShowVerifyModal(true);
-    message.info('Verification code sent to your phone');
-  };
 
-  const handleVerifyCodeSubmit = async () => {
-    if (!verifyCode || verifyCode.length !== 5) {
-      message.error('Please enter a valid 5-digit code');
+    // Check if 5 minutes have passed since last OTP send
+    const now = Date.now();
+    const fiveMinutesInMs = 5 * 60 * 1000;
+    
+    if (lastOtpTime && now - lastOtpTime < fiveMinutesInMs) {
+      const remainingTime = Math.ceil((fiveMinutesInMs - (now - lastOtpTime)) / 1000);
+      const minutes = Math.floor(remainingTime / 60);
+      const seconds = remainingTime % 60;
+      message.error(`Please wait ${minutes}m ${seconds}s before requesting another code`);
       return;
     }
 
     try {
       setVerifyLoading(true);
-      // TODO: Add actual phone verification API call here
-      // For now, just simulate verification
-      
-      // Mark phone as verified
+      await sendPhoneOtp(cleanPhoneNumber(phoneNumber), user.data.user._id);
+
+      setLastOtpTime(now);
+      setOtpCountdown(300); // 5 minutes in seconds
+      setCurrentVerifyField('phoneNumber');
+
+      setShowVerifyModal(true);
+      message.info('Verification code sent to your phone');
+    } catch (error) {
+      message.error('Failed to send verification code');
+      console.error('Error:', error);
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
+
+  const handleVerifyCodeSubmit = async () => {
+    if (!verifyCode || verifyCode.length !== 6) {
+      message.error('Please enter a valid 6-digit code');
+      return;
+    }
+
+    try {
+      setVerifyLoading(true);
+
+      if (currentVerifyField === 'email') {
+        const email = form.getFieldValue('email');
+        await verifyEmail(verifyCode, email, user.data.user._id);
+      } else {
+        const phoneNumber = form.getFieldValue('phoneNumber');
+        await verifyPhone(verifyCode, cleanPhoneNumber(phoneNumber), user.data.user._id);
+      }
+
       setVerifiedFields(prev => ({
         ...prev,
-        phoneNumber: true
+        [currentVerifyField || 'phoneNumber']: true
       }));
 
-      message.success('Phone number verified successfully');
+      message.success(`${currentVerifyField === 'email' ? 'Email' : 'Phone number'} verified successfully`);
       setShowVerifyModal(false);
       setVerifyCode('');
+      setCurrentVerifyField(null);
     } catch (error) {
       message.error('Verification failed. Please try again.');
       console.error('Error:', error);
@@ -181,45 +237,41 @@ const BusinessInformation = () => {
   const handleVerifyCancel = () => {
     setShowVerifyModal(false);
     setVerifyCode('');
+    setCurrentVerifyField(null);
   };
 
-  const handleSubmit = async (values) => {
-    try {
-      setLoading(true);
-      const userId = user?.user?._id;
-      
-      // Clean up phone number - remove formatting for API submission
-      const cleanedValues = {
-        businessName: values.businessName,
-        ownerFirstName: values.ownerFirstName,
-        ownerLastName: values.ownerLastName,
-        businessId: values.businessId,
-        businessDescription: values.businessDescription,
-        phoneNumber: values.phoneNumber.replace(/\D/g, ''),
-        address: {
-          streetAddress: values.streetAddress,
-          address2: values.address2,
-          city: values.city,
-          state: values.state,
-          zipCode: values.zipCode
-        },
-        socialMediaLinks: values.socialMediaLinks
-          .split('\n')
-          .map(link => link.trim())
-          .filter(link => link.length > 0)
-      };
+  const handleVerifyEmail = async () => {
+    const email = form.getFieldValue('email');
+    if (!email || !email.includes('@')) {
+      message.error('Please enter a valid email address');
+      return;
+    }
 
-      if (userId) {
-        await updateBusinessVerification(userId, cleanedValues);
-      }
-      
-      message.success(t("SAVED_SUCCESSFULLY") || 'Saved successfully');
+    // Check if 5 minutes have passed since last OTP send
+    const now = Date.now();
+    const fiveMinutesInMs = 5 * 60 * 1000;
+    
+    if (lastEmailOtpTime && now - lastEmailOtpTime < fiveMinutesInMs) {
+      const remainingTime = Math.ceil((fiveMinutesInMs - (now - lastEmailOtpTime)) / 1000);
+      const minutes = Math.floor(remainingTime / 60);
+      const seconds = remainingTime % 60;
+      message.error(`Please wait ${minutes}m ${seconds}s before requesting another code`);
+      return;
+    }
+
+    try {
+      setVerifyLoading(true);
+      await sendEmailLink(email);
+
+      setLastEmailOtpTime(now);
+      setEmailOtpCountdown(300); // 5 minutes in seconds
+      setCurrentVerifyField('email');
+      message.info('Verification link sent to your email');
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to save';
-      message.error(errorMessage);
+      message.error('Failed to send verification code');
       console.error('Error:', error);
     } finally {
-      setLoading(false);
+      setVerifyLoading(false);
     }
   };
 
@@ -232,7 +284,6 @@ const BusinessInformation = () => {
         <Form
           form={form}
           layout="vertical"
-          onFinish={handleSubmit}
           className="business-form"
         >
           <div className="form-section">
@@ -240,7 +291,6 @@ const BusinessInformation = () => {
               name="businessName"
               label={getVerifiedLabel('businessName', t("BUSINESS_NAME") || 'Business Name')}
               rules={[
-                { required: true, message: t("BUSINESS_NAME_REQUIRED") || 'Business name is required' }
               ]}
             >
               <Input 
@@ -255,8 +305,7 @@ const BusinessInformation = () => {
                 name="ownerFirstName"
                 label={getVerifiedLabel('ownerFirstName', t("OWNER_FIRST_NAME") || 'Owner First Name')}
                 rules={[
-                  { required: true, message: t("OWNER_FIRST_NAME_REQUIRED") || 'Owner first name is required' }
-                ]}
+                  ]}
               >
                 <Input 
                   placeholder="e.g., John"
@@ -269,8 +318,7 @@ const BusinessInformation = () => {
                 name="ownerLastName"
                 label={getVerifiedLabel('ownerLastName', t("OWNER_LAST_NAME") || 'Owner Last Name')}
                 rules={[
-                  { required: true, message: t("OWNER_LAST_NAME_REQUIRED") || 'Owner last name is required' }
-                ]}
+                  ]}
               >
                 <Input 
                   placeholder="e.g., Doe"
@@ -294,7 +342,6 @@ const BusinessInformation = () => {
               name="businessDescription"
               label={getVerifiedLabel('businessDescription', t("BUSINESS_DESCRIPTION") || 'Business Description')}
               rules={[
-                { required: true, message: t("BUSINESS_DESCRIPTION_REQUIRED") || 'Business description is required' }
               ]}
             >
               <Input.TextArea 
@@ -310,10 +357,40 @@ const BusinessInformation = () => {
 
           <div className="form-section">
             <Form.Item
+              name="email"
+              label={getVerifiedLabel('email', t("EMAIL") || 'Email')}
+              rules={[
+                {
+                  type: 'email',
+                  message: t("INVALID_EMAIL") || 'Please enter a valid email address'
+                }
+              ]}
+            >
+              <Input 
+                placeholder="e.g., business@example.com"
+                size="large"
+                disabled={true}
+              />
+            </Form.Item>
+            {!verifiedFields['email'] && (
+              <Button 
+                type="primary"
+                onClick={handleVerifyEmail}
+                style={{ marginTop: '-8px', marginBottom: '16px' }}
+                disabled={emailOtpCountdown > 0}
+                loading={verifyLoading && currentVerifyField === 'email'}
+              >
+                {emailOtpCountdown > 0 
+                  ? `Resend in ${Math.floor(emailOtpCountdown / 60)}:${(emailOtpCountdown % 60).toString().padStart(2, '0')}` 
+                  : 'Verify Email'
+                }
+              </Button>
+            )}
+
+            <Form.Item
               name="phoneNumber"
               label={getVerifiedLabel('phoneNumber', t("PHONE_NUMBER") || 'Phone Number')}
               rules={[
-                { required: true, message: t("PHONE_NUMBER_REQUIRED") || 'Phone number is required' },
                 {
                   pattern: /^\(\d{3}\) \d{3}-\d{4}$/,
                   message: t("INVALID_PHONE") || 'Please enter a valid phone number'
@@ -333,8 +410,13 @@ const BusinessInformation = () => {
                 type="primary"
                 onClick={handleVerifyPhone}
                 style={{ marginTop: '-8px', marginBottom: '16px' }}
+                disabled={otpCountdown > 0}
+                loading={verifyLoading}
               >
-                Verify Phone Number
+                {otpCountdown > 0 
+                  ? `Resend in ${Math.floor(otpCountdown / 60)}:${(otpCountdown % 60).toString().padStart(2, '0')}` 
+                  : 'Verify Phone Number'
+                }
               </Button>
             )}
           </div>
@@ -344,7 +426,6 @@ const BusinessInformation = () => {
               name="streetAddress"
               label={getVerifiedLabel('streetAddress', t("STREET_ADDRESS") || 'Street Address')}
               rules={[
-                { required: true, message: t("STREET_ADDRESS_REQUIRED") || 'Street address is required' }
               ]}
             >
               <Input 
@@ -369,7 +450,6 @@ const BusinessInformation = () => {
               name="city"
               label={getVerifiedLabel('city', t("CITY") || 'City')}
               rules={[
-                { required: true, message: t("CITY_REQUIRED") || 'City is required' }
               ]}
             >
               <Input 
@@ -385,16 +465,11 @@ const BusinessInformation = () => {
                   name="state"
                   label={getVerifiedLabel('state', t("STATE") || 'State')}
                   rules={[
-                    { required: true, message: t("STATE_REQUIRED") || 'State is required' }
                   ]}
                 >
-                  <Select 
-                    placeholder={t("SELECT_YOUR_STATE") || 'Select your state'}
+                  <Input 
+                    placeholder={t("SELECT_YOUR_STATE") || 'e.g., California'}
                     size="large"
-                    options={US_STATES.map(state => ({
-                      label: state,
-                      value: state
-                    }))}
                     disabled={verifiedFields['state']}
                   />
                 </Form.Item>
@@ -405,7 +480,7 @@ const BusinessInformation = () => {
                   name="zipCode"
                   label={getVerifiedLabel('zipCode', t("ZIP_CODE") || 'ZIP Code')}
                   rules={[
-                    { required: true, message: t("ZIP_CODE_REQUIRED") || 'ZIP code is required' },
+
                     {
                       pattern: /^\d{5}(-\d{4})?$/,
                       message: t("INVALID_ZIP") || 'Please enter a valid ZIP code'
@@ -435,18 +510,6 @@ const BusinessInformation = () => {
               />
             </Form.Item>
           </div>
-
-          <Form.Item>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              loading={loading}
-              size="large"
-              className="submit-button"
-            >
-              {t("SAVE_CHANGES") || 'Save Changes'}
-            </Button>
-          </Form.Item>
         </Form>
       </div>
       </Card>
@@ -471,14 +534,14 @@ const BusinessInformation = () => {
       >
         <div style={{ textAlign: 'center' }}>
           <p style={{ marginBottom: '24px' }}>
-            Enter the 5-digit verification code sent to your phone number
+            Enter the 6-digit verification code sent to your phone number
           </p>
           <Input
-            placeholder="Enter 5-digit code"
+            placeholder="Enter 6-digit code"
             value={verifyCode}
             onChange={(e) => setVerifyCode(e.target.value.toUpperCase())}
             onPressEnter={handleVerifyCodeSubmit}
-            maxLength={5}
+            maxLength={6}
             size="large"
             style={{ 
               textAlign: 'center',

@@ -295,5 +295,7 @@
   "SAVED_SUCCESSFULLY": "Guardado exitosamente",
   "FAILED_TO_SAVE": "Error al guardar",
   "USERS": "Usuarios",
+  "SUBSCRIPTIONS": "Suscripciones",
+  "PAYMENT_METHODS": "Métodos de Pago",
   "MASTER": "Maestro"
 }
