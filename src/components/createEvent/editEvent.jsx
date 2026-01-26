@@ -116,7 +116,7 @@ const CreateEvent = () => {
         if (value.trim()) {
             try {
                 const response = await fetch(
-                    `https://api.locationiq.com/v1/autocomplete?key=${import.meta.env.REACT_APP_GOOGLE_API_KEY}&q=${encodeURIComponent(value)}&format=json`
+                    `https://api.locationiq.com/v1/autocomplete?key=${import.meta.env.VITE_REACT_APP_GOOGLE_API_KEY}&q=${encodeURIComponent(value)}&format=json`
                 );
 
                 if (!response.ok) {

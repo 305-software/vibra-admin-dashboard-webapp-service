@@ -2,13 +2,14 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import FullCalendar from '@fullcalendar/react';
 import { Layout } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from "react-i18next";
 import { IoCloseOutline } from "react-icons/io5";
 import { MdOutlineDateRange } from "react-icons/md";
 import { useDispatch, useSelector } from 'react-redux';
 
 import map from "../../assets/map.png";
+import { UserContext } from '../context/userContext';
 import { eventListDetails } from "../../redux/eventSlice";
 import FormattedDate from '../../utlis/date';
 import Button from '../button/button';
@@ -32,12 +33,13 @@ const App = () => {
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
     const [showDropdown, setShowDropdown] = useState(false);
     const dispatch = useDispatch();
+    const { user } = useContext(UserContext);
     const events = useSelector((state) => state.eventSlice.eventList) || [];
     const { t } = useTranslation();
 
     useEffect(() => {
-        dispatch(eventListDetails());
-    }, [dispatch]);
+        dispatch(eventListDetails('', '', user?.data.user?._id));
+    }, [dispatch, user]);
 
     const calendarEvents = events.reduce((acc, event) => {
         const eventDate = event.eventDate;

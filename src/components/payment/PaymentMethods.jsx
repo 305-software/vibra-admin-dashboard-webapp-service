@@ -247,13 +247,23 @@ const PaymentMethodsContent = () => {
         };
 
         const response = await addPaymentMethod(paymentData);
+
+        const dataToAdd = {
+          id: response.data.id,
+          cardType: response.data?.brand.toUpperCase(),
+          cardHolder: response.data?.cardholderName || 'N/A',
+          last4: response.data?.last4,
+          expiryDate: `${response.data?.expiryDate}`,
+          isDefault: response.data.isDefault || false,
+          createdAt: new Date(response.data.createdAt)
+        }
         
         const newId = Math.max(...paymentMethods.map(m => m.id), 0) + 1;
         setPaymentMethods([
           ...paymentMethods,
           {
             id: newId,
-            ...values,
+            ...dataToAdd,
             isDefault: values.isDefault || false
           }
         ]);
@@ -318,14 +328,14 @@ const PaymentMethodsContent = () => {
       width: '20%',
       render: (_, record) => (
         <Space size='small'>
-          <Button
+          {/* <Button
             type='primary'
             size='small'
             icon={<EditOutlined />}
             onClick={() => handleEditClick(record)}
           >
             Edit
-          </Button>
+          </Button> */}
           <Popconfirm
             title='Delete Payment Method'
             description='Are you sure you want to delete this payment method?'

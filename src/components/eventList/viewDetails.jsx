@@ -62,6 +62,7 @@ function ViewDetails() {
     const {eventById:data } = useSelector((state) => state.eventSlice) || {};
 
     const [loading, setLoading] = useState(true);
+    const [mainImageIndex, setMainImageIndex] = useState(0);
 
     useEffect(() => {
         // Simulate data fetching
@@ -105,7 +106,24 @@ function ViewDetails() {
                             <div className='event-details-colors'>
                                 <Row>
                                     <Col lg="5">
-                                        <img src={`${data.imageUrl}`} alt="Event" className='event-details-images' />
+                                        <div>
+                                            <img src={`${data.imageUrl[mainImageIndex]}`} alt="Event" className='event-details-images' style={{ width: '100%', height: '350px', objectFit: 'cover', cursor: 'pointer' }} />
+                                            {data.imageUrl && data.imageUrl.length > 1 && (
+                                                <Row className='mt-3'>
+                                                    {data.imageUrl.map((image, index) => (
+                                                        <Col lg="6" key={index} className='mb-2'>
+                                                            <img 
+                                                                src={`${image}`} 
+                                                                alt={`Event ${index + 1}`} 
+                                                                className='event-details-images' 
+                                                                style={{ width: '100%', height: '120px', objectFit: 'cover', cursor: 'pointer', opacity: mainImageIndex === index ? 0.5 : 1, border: mainImageIndex === index ? '2px solid blue' : 'none' }}
+                                                                onClick={() => setMainImageIndex(index)}
+                                                            />
+                                                        </Col>
+                                                    ))}
+                                                </Row>
+                                            )}
+                                        </div>
                                     </Col>
                                     <Col className='mt-1' lg="7">
                                         <h3>{t("EVENT_DESCRIPTION")}</h3>

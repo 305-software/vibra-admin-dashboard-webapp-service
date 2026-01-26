@@ -203,20 +203,22 @@ export const eventCategoryDetails = () =>
 * @function eventListDetails
 * @param {string} selectedCategory - The category of events to filter.
 * @param {string} calender - The date for which to fetch events.
+* @param {string} userId - The ID of the user.
 * @returns {Function} A thunk function that dispatches the event list to the store.
 * 
 * @async
 * @throws {Object} An error object if the request fails, containing error details.
 * 
 * @example
-* dispatch(eventListDetails('Concert', '2024-12-28'));
+* dispatch(eventListDetails('Concert', '2024-12-28', 'user123'));
 */
 
-export const eventListDetails = (selectedCategory, calender) =>
+export const eventListDetails = (selectedCategory, calender, userId) =>
     async (dispatch) => {
         const category = {
             'eventCategory': selectedCategory,
             'eventDate': calender,
+            'userId': userId,
         }
         try {
             dispatch(setLoadingState({ key: 'eventList', value: true }));

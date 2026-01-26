@@ -40,30 +40,48 @@
 
 
 
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
+import { MdOutlineDateRange } from 'react-icons/md';
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 import map from "../../assets/map.png";
+import { UserContext } from '../context/userContext';
 import { eventListDetails } from "../../redux/eventSlice";
 import * as constant from "../../utlis/constant";
 import Button from '../button/button';
 import Card from '../card/card';
+import FormattedDate from '../../utlis/date';
 import ProgressBarComponent from '../progressBar/progressBar';
 
 function EventDetails({ selectedCategory, calender }) {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { user } = useContext(UserContext);
     const {eventList:data , loading} = useSelector((state) => state.eventSlice) || [];
     const { t } = useTranslation();
+    const [swappedImages, setSwappedImages] = useState({});
+    
     useEffect(() => {
         const fetchData = async () => {
-            await dispatch(eventListDetails(selectedCategory, calender));
+            await dispatch(eventListDetails(selectedCategory, calender, user?.data.user?._id));
         };
         fetchData();
     }, [dispatch, selectedCategory, calender,t]);
+
+    const handleThumbnailClick = (eventId, imageUrl, thumbnailIndex) => {
+        setSwappedImages(prev => {
+            const currentImages = swappedImages[eventId] ? [...swappedImages[eventId]] : [...imageUrl];
+            // Swap: current main image (index 0) with the clicked thumbnail (thumbnailIndex + 1)
+            [currentImages[0], currentImages[thumbnailIndex + 1]] = [currentImages[thumbnailIndex + 1], currentImages[0]];
+            return {
+                ...prev,
+                [eventId]: currentImages
+            };
+        });
+    };
 
     const ViewDetails = (name) => {
         navigate(`viewDetails/${name}`);
@@ -78,15 +96,55 @@ function EventDetails({ selectedCategory, calender }) {
                         return (
                             <Col className='mb-4 my-0 mx-0' key={index} lg={6} md={12} xs={12}>
                                 <Card loading={loading}>
-                                    <img
-                                        src={`${details.imageUrl}`}
-                                        alt="Event"
-                                        className="event-card-image"
-                                    />
+                                    <div className='event-images-container'>
+                                        {(details.imageUrl && details.imageUrl.length > 0) ? (
+                                            <>
+                                                {/* Main Image */}
+                                                <div className='event-main-image-wrapper'>
+                                                    <img
+                                                        src={`${(swappedImages[details._id] || details.imageUrl)[0]}`}
+                                                        alt="Event Main"
+                                                        className="event-main-image"
+                                                    />
+                                                </div>
+                                                {/* Additional Images Grid */}
+                                                {details.imageUrl.length > 1 && (
+                                                    <div className='event-thumbnails-grid'>
+                                                        {(swappedImages[details._id] || details.imageUrl).slice(1, 5).map((url, imgIndex) => (
+                                                            <div 
+                                                                key={imgIndex} 
+                                                                className='event-thumbnail-square'
+                                                                onClick={() => handleThumbnailClick(details._id, details.imageUrl, imgIndex)}
+                                                                style={{ cursor: 'pointer' }}
+                                                            >
+                                                                <img
+                                                                    src={`${url}`}
+                                                                    alt={`Event ${imgIndex + 2}`}
+                                                                    className="event-thumbnail-image"
+                                                                />
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : details.imageUrl ? (
+                                            <div className='event-main-image-wrapper'>
+                                                <img
+                                                    src={`${details.imageUrl}`}
+                                                    alt="Event"
+                                                    className="event-main-image"
+                                                />
+                                            </div>
+                                        ) : null}
+                                    </div>
                                     <div className='mt-4'>
                                         <div className='eventlist-loc-container mt-2'>
                                             <h3  className='eventNameEllipse'>{details.eventName}</h3>
-                                            <p className="eventColor">{details.eventTime}</p>
+                                            <div className='eventlist-loc-container-details mt-4'>
+                                                <h6 className='event-border'>
+                                                    <MdOutlineDateRange /> {details.eventDate ? details.eventDate.split("T")[0] : "No Date"} - {details.eventTime || "No Time"}
+                                                </h6>
+                                            </div>
                                         </div>
                                         <div className='eventlist-loc-container mt-2'>
                                             <p className='eventColor event-details-location'>

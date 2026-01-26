@@ -47,12 +47,13 @@
 
 
 
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
+import { UserContext } from '../context/userContext';
 import { deleteEventSliceDetails, eventListDetails } from "../../redux/eventSlice";
 import * as constant from "../../utlis/constant";
 import FormattedDate from "../../utlis/date";
@@ -67,15 +68,16 @@ const TableEvent = ({ selectedCategory, calender }) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState(null);
   const dispatch = useDispatch();
+  const { user } = useContext(UserContext);
   const {eventList:data , loading } = useSelector((state) => state.eventSlice) || [];
   const { t } = useTranslation();
   useEffect(() => {
     const fetchData = async () => {
-      await dispatch(eventListDetails(selectedCategory, calender));
+      await dispatch(eventListDetails(selectedCategory, calender, user?.data.user?._id));
     };
 
     fetchData();
-  }, [dispatch, selectedCategory, calender]);
+  }, [dispatch, selectedCategory, calender, user]);
 
   const flattenedData = data.flatMap((event, index) => ({
     [t("SNO")]: index + 1,
@@ -134,7 +136,7 @@ const TableEvent = ({ selectedCategory, calender }) => {
     });
      }
        
-      await dispatch(eventListDetails(selectedCategory, calender)); // Fetch updated list
+      await dispatch(eventListDetails(selectedCategory, calender, user?.data.user?._id)); // Fetch updated list
       setShowModal(false); // Close the modaqal
       setSelectedEventId(null); // Reset selected ID
     }

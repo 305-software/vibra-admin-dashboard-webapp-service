@@ -30,7 +30,7 @@
  * - inputValue: Current value of the location input.
  * - editingSpeakerIndex: Index of the speaker being edited.
  * - imagePreview: URL for the preview of the speaker's image.
- * - eventImagePreview: URL for the preview of the event's image.
+ * - eventImagePreviews: Array of URLs for previews of up to 5 event images.
  * - loading: Boolean indicating whether the form submission is in progress.
  *
  * @methods
@@ -55,7 +55,7 @@
 
 import 'react-toastify/dist/ReactToastify.css';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Col, Container, Form, Row } from 'react-bootstrap';
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from 'react-redux';
@@ -63,6 +63,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 import config from "../../config"
+import { UserContext } from '../context/userContext';
 import { createEventDetails, eventCategoryDetails } from "../../redux/eventSlice";
 import * as constant from "../../utlis/constant";
 import Button from '../button/button';
@@ -71,8 +72,6 @@ import Card from '../card/tableCard';
 import CustomInput from '../customInput/customInput';
 import CustomTextArea from '../customInput/customTextArea';
 import CustomTable from '../table/speakerEventTable';
-
-const headers = ['Speaker Name', 'Speaker Type', 'Speaker Image', 'Action'];
 
 const CreateEvent = () => {
     const initialFormValues = {
@@ -88,28 +87,20 @@ const CreateEvent = () => {
         eventType: '',
         totalSeats: '',
         eventGuideline: '',
-        imageUrl: null,
-    };
-    const initialSpeakerValues = {
-        speakerName: '',
-        speakerType: '',
-        speakerImage: null,
+        imageUrls: [],
     };
     const [formValues, setFormValues] = useState(initialFormValues);
-    const [speakers, setSpeakers] = useState([]);
-    const [currentSpeaker, setCurrentSpeaker] = useState(initialSpeakerValues);
     const [error, setError] = useState({});
     const [locationSuggestions, setLocationSuggestions] = useState([]);
     const [inputValue, setInputValue] = useState('');
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { user } = useContext(UserContext);
     const categories = useSelector((state) => state.eventSlice.eventCategory) || [];
-    const fileInputRef = useRef(null);
     const eventImageInputRef = useRef(null);
-    const [editingSpeakerIndex, setEditingSpeakerIndex] = useState(null);
-    const [imagePreview, setImagePreview] = useState(null);
-    const [eventImagePreview, setEventImagePreview] = useState(null);
+    const [eventImagePreviews, setEventImagePreviews] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [showBoostModal, setShowBoostModal] = useState(false);
     const { t } = useTranslation();
 
     const handleChange = (e) => {
@@ -122,15 +113,15 @@ const CreateEvent = () => {
           processedValue = value.substring(0, 5); // Remove seconds
         }
 
-        // Handle event image upload
-        if (name === 'imageUrl' && type === 'file' && files.length > 0) {
-            const file = files[0];
+        // Handle event image upload - support up to 5 images
+        if (name === 'imageUrls' && type === 'file' && files.length > 0) {
+            const currentImages = formValues.imageUrls;
             
-            // Validate file type - only allow images
-            if (!file.type.startsWith('image/')) {
-                toast.error(t("PLEASE_SELECT_AN_IMAGE_FILE"), {
+            // Check if adding new files would exceed the limit
+            if (currentImages.length >= 5) {
+                toast.error(t("MAXIMUM_5_IMAGES_ALLOWED") || "You can only upload a maximum of 5 images", {
                     display: 'flex',
-                    toastId: 'file-type-error',
+                    toastId: 'max-images-error',
                     autoClose: 3000,
                     closeOnClick: true,
                     pauseOnHover: true,
@@ -144,25 +135,13 @@ const CreateEvent = () => {
                 return;
             }
             
-            setFormValues({
-                ...formValues,
-                [name]: file
-            });
-            // Create image preview for event image
-            setEventImagePreview(URL.createObjectURL(file));
-        } else {
-            setFormValues({
-                ...formValues,
-                [name]: type === 'file' ? files[0] : processedValue
-            });
-        }
-    };
-    
-    const handleSpeakerChange = (e) => {
-        const { name, value, files } = e.target;
-        if (name === constant.SPEAKERIMAGE) {
-            if (files.length > 0) {
-                const file = files[0];
+            // Process each selected file
+            const newImages = [];
+            const newPreviews = [...eventImagePreviews];
+            let filesAdded = 0;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
                 
                 // Validate file type - only allow images
                 if (!file.type.startsWith('image/')) {
@@ -175,62 +154,45 @@ const CreateEvent = () => {
                         toastClassName: 'custom-toast',
                         bodyClassName: 'custom-toast',
                     });
-                    // Reset the file input
-                    if (fileInputRef.current) {
-                        fileInputRef.current.value = '';
-                    }
-                    return;
+                    continue;
                 }
                 
-                setCurrentSpeaker((prev) => ({ ...prev, speakerImage: file }));
-
-                // Create image preview
-                setImagePreview(URL.createObjectURL(file));
+                // Check limit while adding files
+                if (currentImages.length + filesAdded >= 5) {
+                    toast.warning(t("MAXIMUM_5_IMAGES_ALLOWED") || "Only 5 images can be uploaded. Additional files were skipped.", {
+                        display: 'flex',
+                        toastId: 'max-images-warning',
+                        autoClose: 3000,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        toastClassName: 'custom-toast',
+                        bodyClassName: 'custom-toast',
+                    });
+                    break;
+                }
+                
+                newImages.push(file);
+                newPreviews.push(URL.createObjectURL(file));
+                filesAdded++;
+            }
+            
+            setFormValues({
+                ...formValues,
+                imageUrls: [...currentImages, ...newImages]
+            });
+            setEventImagePreviews(newPreviews);
+            
+            // Reset the file input
+            if (eventImageInputRef.current) {
+                eventImageInputRef.current.value = '';
             }
         } else {
-            setCurrentSpeaker({ ...currentSpeaker, [name]: value });
+            setFormValues({
+                ...formValues,
+                [name]: type === 'file' ? files[0] : processedValue
+            });
         }
     };
-
-    const handleEditSpeaker = (speaker, index) => {
-        // Set the current speaker to the one being edited
-        setCurrentSpeaker({
-            speakerName: speaker.speakerName,
-            speakerType: speaker.speakerType,
-            speakerImage: speaker.speakerImage
-        });
-
-        // Set image preview if speaker has an existing image
-        if (speaker.speakerImage) {
-            // If it's a string (from server), use config.imageUrl
-            // If it's a File object, use URL.createObjectURL
-            setImagePreview(
-                typeof speaker.speakerImage === 'string'
-                    ? `${speaker.speakerImage}`
-                    : URL.createObjectURL(speaker.speakerImage)
-            );
-        }
-
-        // Set the editing index
-        setEditingSpeakerIndex(index);
-    };
-
-
-    const addSpeaker = () => {
-        if (currentSpeaker.speakerName && currentSpeaker.speakerType && currentSpeaker.speakerImage) {
-            setSpeakers(prevSpeakers => [...prevSpeakers, currentSpeaker]);
-            setCurrentSpeaker(initialSpeakerValues);
-
-            // Reset file input
-            if (fileInputRef.current) {
-                fileInputRef.current.value = ''; // This clears the file input
-            }
-            setImagePreview(null);
-        } else {
-            alert(t("PLEASE_FILL_ALL_THE_SPEAKER_FIELD"));
-        }
-    };
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -238,13 +200,19 @@ const CreateEvent = () => {
             setLoading(true);
             const formData = new FormData();
             Object.keys(formValues).forEach(key => {
-                formData.append(key, formValues[key]);
+                if (key === 'imageUrls') {
+                    // Append each image separately
+                    formValues[key].forEach((image, index) => {
+                        formData.append(`imageUrls[${index}]`, image);
+                    });
+                } else {
+                    formData.append(key, formValues[key]);
+                }
             });
-            speakers.forEach((speaker, index) => {
-                formData.append(`speakers[${index}][speakerName]`, speaker.speakerName);
-                formData.append(`speakers[${index}][speakerType]`, speaker.speakerType);
-                formData.append(`speakers[${index}][speakerImage]`, speaker.speakerImage);
-            });
+            // Add user ID to formData
+            if (user?.data.user?._id) {
+                formData.append('userId', user.data.user._id);
+            }
             try {
                 const response = await dispatch(createEventDetails(formData)).unwrap();
              
@@ -258,8 +226,9 @@ const CreateEvent = () => {
                         toastClassName: 'custom-toast',
                         bodyClassName: 'custom-toast',
                     });
+                    // Show boost modal after successful event creation
                     setTimeout(() => {
-                        navigate('/eventList'); // Navigate on success
+                        setShowBoostModal(true);
                     }, 2000);
                 }
             } catch (err) {
@@ -282,64 +251,22 @@ const CreateEvent = () => {
         dispatch(eventCategoryDetails());
     }, [dispatch]);
 
-
-    const updateSpeaker = () => {
-        if (currentSpeaker.speakerName && currentSpeaker.speakerType && currentSpeaker.speakerImage) {
-            if (editingSpeakerIndex !== null) {
-                const updatedSpeakers = [...speakers];
-                updatedSpeakers[editingSpeakerIndex] = currentSpeaker;
-                setSpeakers(updatedSpeakers);
-
-                // Reset states
-                setEditingSpeakerIndex(null);
-                setCurrentSpeaker(initialSpeakerValues);
-                setImagePreview(null);
-
-                // Reset file input
-                if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                }
-            } else {
-                addSpeaker();
-            }
-        } else {
-            alert(t("PLEASE_FILL_ALL_THE_SPEAKER_FIELD"));
-        }
-    };
-
-    // Function to remove event image
-    const removeEventImage = () => {
+    // Function to remove event image by index
+    const removeEventImage = (index) => {
+        const updatedImages = formValues.imageUrls.filter((_, i) => i !== index);
+        const updatedPreviews = eventImagePreviews.filter((_, i) => i !== index);
+        
         setFormValues({
             ...formValues,
-            imageUrl: null
+            imageUrls: updatedImages
         });
-        setEventImagePreview(null);
+        setEventImagePreviews(updatedPreviews);
         
         // Reset file input
         if (eventImageInputRef.current) {
             eventImageInputRef.current.value = '';
         }
     };
-
-    // Function to remove speaker image
-    const removeSpeakerImage = () => {
-        setCurrentSpeaker({
-            ...currentSpeaker,
-            speakerImage: null
-        });
-        setImagePreview(null);
-        
-        // Reset file input
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
-    };
-
-    // Modify the speaker action button
-    const speakerActionButton = editingSpeakerIndex !== null
-        ? <Button type="button" name={t("UPDATE_SPEAKER")} onClick={updateSpeaker} />
-        : <Button type="button" name={t("ADD_MORE_SPEAKER")} onClick={addSpeaker} />;
-
 
     const validate = () => {
         const error = {};
@@ -385,20 +312,14 @@ const CreateEvent = () => {
             isFormValid = false;
             error.eventGuideline = t("PLEASE_ENTER_THE_EVENT_GUIDELINES");
         }
-        if (!formValues.imageUrl) {
+        if (!formValues.imageUrls || formValues.imageUrls.length === 0) {
             isFormValid = false;
-            error.imageUrl = t("PLEASE_CHOOSE_THE_IMAGE");
+            error.imageUrls = t("PLEASE_CHOOSE_THE_IMAGE");
         }
 
         setError(error);
         return isFormValid;
     };
-
-    const removeSpeaker = (index) => {
-        setSpeakers((prevSpeakers) => prevSpeakers.filter((_, i) => i !== index));
-    };
-
-
 
     const handleLocationChange = async (e) => {
         const value = e.target.value;
@@ -406,8 +327,9 @@ const CreateEvent = () => {
 
         if (value.trim()) {
             try {
+                const apiKey = import.meta.env.VITE_REACT_APP_GOOGLE_API_KEY;
                 const response = await fetch(
-                    `https://api.locationiq.com/v1/autocomplete?key=${[process.env.REACT_APP_GOOGLE_API_KEY]}=${encodeURIComponent(value)}&format=json`
+                    `https://api.locationiq.com/v1/autocomplete?key=${apiKey}&q=${encodeURIComponent(value)}&format=json`
                 );
 
                 if (!response.ok) {
@@ -433,6 +355,28 @@ const CreateEvent = () => {
         }));
         setInputValue(place.display_name);
         setLocationSuggestions([]);
+    };
+
+    const handleBoostEvent = () => {
+        setShowBoostModal(false);
+        // Navigate to boost event page or open boost flow
+        // You can add the boost logic here
+        toast.info(t("REDIRECTING_TO_BOOST") || "Redirecting to boost event...", {
+            display: 'flex',
+            autoClose: 1500,
+            closeOnClick: true,
+            pauseOnHover: true,
+            toastClassName: 'custom-toast',
+            bodyClassName: 'custom-toast',
+        });
+        setTimeout(() => {
+            navigate('/eventList'); // Or navigate to boost page
+        }, 1500);
+    };
+
+    const handleSkipBoost = () => {
+        setShowBoostModal(false);
+        navigate('/eventList');
     };
 
     return (
@@ -531,7 +475,14 @@ const CreateEvent = () => {
                                             name="price"
                                         />
                                         <p style={{ color: 'red' }}>{error.price}</p>
-                                    </Form.Group>
+                                    </Form.Group>                                   
+                                </div>
+                            </Card>
+                        </Col>
+                        
+                        <Col lg={6} md={12} className='mb-4'>
+                            <Card>
+                                
 
                                     <Form.Group controlId="location" className="mb-3">
                                         <Form.Label className='form-event'>{t("LOCATION")} <span className='span-star'>*</span></Form.Label>
@@ -589,168 +540,243 @@ const CreateEvent = () => {
                                             name="eventGuideline"
                                         />
                                         <p style={{ color: 'red' }}>{error.eventGuideline}</p>
-                                    </Form.Group>
+                                    </Form.Group> 
 
-                                    <Form.Group controlId="image" className="mb-3">
-                                        <CustomInput
+                                <Form.Group controlId="eventImages" className="mb-3">
+                                        <input
                                             ref={eventImageInputRef}
                                             type="file"
-                                            label={t("EVENT_IMAGE")}
                                             onChange={handleChange}
-                                            name="imageUrl"
+                                            name="imageUrls"
                                             accept="image/*"
+                                            multiple
+                                            style={{ display: 'none' }}
+                                            id="imageUploadInput"
                                         />
-                                        <p style={{ color: 'red' }}>{error.imageUrl}</p>
+                                        <label 
+                                            htmlFor="imageUploadInput"
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                padding: '60px 20px',
+                                                border: '2px dashed #d9d9d9',
+                                                borderRadius: '8px',
+                                                cursor: 'pointer',
+                                                backgroundColor: '#fafafa',
+                                                transition: 'all 0.3s ease',
+                                                minHeight: '200px'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.borderColor = '#4096ff';
+                                                e.currentTarget.style.backgroundColor = '#f0f5ff';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.borderColor = '#d9d9d9';
+                                                e.currentTarget.style.backgroundColor = '#fafafa';
+                                            }}
+                                        >
+                                            <svg 
+                                                width="64" 
+                                                height="64" 
+                                                viewBox="0 0 24 24" 
+                                                fill="none" 
+                                                stroke="#4096ff" 
+                                                strokeWidth="2" 
+                                                strokeLinecap="round" 
+                                                strokeLinejoin="round"
+                                                style={{ marginBottom: '16px' }}
+                                            >
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                <polyline points="17 8 12 3 7 8"></polyline>
+                                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                                            </svg>
+                                            <div style={{
+                                                fontSize: '18px',
+                                                fontWeight: '600',
+                                                color: '#4096ff',
+                                                marginBottom: '8px'
+                                            }}>
+                                                {t("UPLOAD_PHOTOS_AND_VIDEO") || "Upload photos and video"}
+                                            </div>
+                                            <div style={{
+                                                fontSize: '14px',
+                                                color: '#8c8c8c'
+                                            }}>
+                                                {formValues.imageUrls.length}/5 images uploaded
+                                            </div>
+                                        </label>
+                                        {error.imageUrls && (
+                                            <p style={{ color: 'red', marginTop: '8px', fontSize: '14px' }}>{error.imageUrls}</p>
+                                        )}
                                         
-                                        {/* Event Image Preview with Delete Button */}
-                                        {eventImagePreview && (
-                                            <div className="mt-2 image-preview-container" style={{ position: 'relative', display: 'inline-block' }}>
-                                                <img
-                                                    src={eventImagePreview}
-                                                    alt="Event Preview"
-                                                    style={{
-                                                        maxWidth: '200px',
-                                                        maxHeight: '200px',
-                                                        objectFit: 'cover',
-                                                        borderRadius: '8px',
-                                                        border: '1px solid #ddd'
-                                                    }}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={removeEventImage}
-                                                    style={{
-                                                        position: 'absolute',
-                                                        top: '5px',
-                                                        right: '5px',
-                                                        background: 'rgba(255, 0, 0, 0.7)',
-                                                        color: 'white',
-                                                        border: 'none',
-                                                        borderRadius: '50%',
-                                                        width: '24px',
-                                                        height: '24px',
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        fontSize: '14px',
-                                                        fontWeight: 'bold'
-                                                    }}
-                                                    title="Remove Image"
-                                                >
-                                                    ×
-                                                </button>
+                                        {/* Event Image Previews with Delete Buttons */}
+                                        {eventImagePreviews.length > 0 && (
+                                            <div className="mt-3" style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
+                                                {eventImagePreviews.map((preview, index) => (
+                                                    <div key={index} className="image-preview-container" style={{ position: 'relative', display: 'inline-block' }}>
+                                                        <img
+                                                            src={preview}
+                                                            alt={`Event Preview ${index + 1}`}
+                                                            style={{
+                                                                maxWidth: '150px',
+                                                                maxHeight: '150px',
+                                                                objectFit: 'cover',
+                                                                borderRadius: '8px',
+                                                                border: '1px solid #ddd'
+                                                            }}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeEventImage(index)}
+                                                            style={{
+                                                                position: 'absolute',
+                                                                top: '5px',
+                                                                right: '5px',
+                                                                background: 'rgba(255, 0, 0, 0.7)',
+                                                                color: 'white',
+                                                                border: 'none',
+                                                                borderRadius: '50%',
+                                                                width: '24px',
+                                                                height: '24px',
+                                                                cursor: 'pointer',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                fontSize: '14px',
+                                                                fontWeight: 'bold'
+                                                            }}
+                                                            title="Remove Image"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </div>
+                                                ))}
                                             </div>
                                         )}
                                     </Form.Group>
-                                </div>
-                            </Card>
-                        </Col>
-
-                        <Col lg={6} md={12}>
-                            <Card >
-                                <div className='booking-main-head card-height'>
-                                    <div>
-                                        <div className='d-flex justify-content-between mb-2'>
-                                            <h3 className='mb-3'>{t("EVENT_SPEAKER")}</h3>
-
-                                        </div>
-
-                                        <Form.Group controlId="speakerName" className="mb-3">
-                                            <CustomInput
-                                                type="text"
-                                                label={t("SPEAKER_NAME")}
-                                                value={currentSpeaker.speakerName}
-                                                onChange={handleSpeakerChange}
-                                                name="speakerName"
-                                            />
-                                        </Form.Group>
-
-                                        <Form.Group controlId="speakerType" className="mb-3">
-                                            <CustomTextArea
-                                                label={t("SPEAKER_TYPE")}
-                                                value={currentSpeaker.speakerType}
-                                                onChange={handleSpeakerChange}
-                                                name="speakerType"
-                                            />
-                                        </Form.Group>
-
-                                        <Form.Group controlId="speakerImage" className="mb-3">
-                                            <Form.Label className="form-event">
-                                                {t("SPEAKER_IMAGE")}
-                                            </Form.Label>
-                                            <div className="custom-file-input-wrapper">
-
-                                                <CustomInput
-                                                    ref={fileInputRef}
-                                                    type="file"
-                                                    onChange={handleSpeakerChange}
-                                                    name="speakerImage"
-                                                    className="form-event-control custom-file-input"
-                                                    accept="image/*"
-                                                />
-                                            </div>
-
-                                            {/* Speaker Image Preview with Delete Button */}
-                                            {imagePreview && (
-                                                <div className="mt-2 image-preview-container" style={{ position: 'relative', display: 'inline-block' }}>
-                                                    <img
-                                                        src={imagePreview}
-                                                        alt="Speaker Preview"
-                                                        style={{
-                                                            maxWidth: '200px',
-                                                            maxHeight: '200px',
-                                                            objectFit: 'cover',
-                                                            borderRadius: '8px',
-                                                            border: '1px solid #ddd'
-                                                        }}
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={removeSpeakerImage}
-                                                        style={{
-                                                            position: 'absolute',
-                                                            top: '5px',
-                                                            right: '5px',
-                                                            background: 'rgba(255, 0, 0, 0.7)',
-                                                            color: 'white',
-                                                            border: 'none',
-                                                            borderRadius: '50%',
-                                                            width: '24px',
-                                                            height: '24px',
-                                                            cursor: 'pointer',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            fontSize: '14px',
-                                                            fontWeight: 'bold'
-                                                        }}
-                                                        title="Remove Image"
-                                                    >
-                                                        ×
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </Form.Group>
-
-                                        <div className="mt-4 speaker-details">
-                                            <div>
-                                                {speakers.length > 0 ? (
-                                                    <CustomTable headers={headers} data={speakers} onRemove={removeSpeaker} onEdit={handleEditSpeaker} />
-                                                ) : (
-                                                    <p className='noSpeaker-yet'>{t("NO_SPEAKER_ADDED_YET")}</p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className='speaker-button'>  {speakerActionButton}</div>
-                                </div>
                             </Card>
                         </Col>
                     </Row>
                 </Form>
             </div>
+
+            {/* Boost Event Modal */}
+            {showBoostModal && (
+                <div 
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 9999
+                    }}
+                    onClick={handleSkipBoost}
+                >
+                    <div 
+                        style={{
+                            backgroundColor: '#fff',
+                            borderRadius: '12px',
+                            padding: '40px',
+                            maxWidth: '500px',
+                            width: '90%',
+                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+                            textAlign: 'center'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div style={{ marginBottom: '24px' }}>
+                            <svg 
+                                width="80" 
+                                height="80" 
+                                viewBox="0 0 24 24" 
+                                fill="none" 
+                                stroke="#56D436" 
+                                strokeWidth="2" 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round"
+                                style={{ margin: '0 auto' }}
+                            >
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                            </svg>
+                        </div>
+                        <h2 style={{ 
+                            fontSize: '24px', 
+                            fontWeight: '600', 
+                            marginBottom: '16px',
+                            color: '#333'
+                        }}>
+                            {t("BOOST_YOUR_EVENT") || "Boost Your Event?"}
+                        </h2>
+                        <p style={{ 
+                            fontSize: '16px', 
+                            color: '#666', 
+                            marginBottom: '32px',
+                            lineHeight: '1.5'
+                        }}>
+                            {t("BOOST_EVENT_DESCRIPTION") || "Increase your event's visibility and reach more attendees by boosting it now!"}
+                        </p>
+                        <div style={{ 
+                            display: 'flex', 
+                            gap: '16px', 
+                            justifyContent: 'center' 
+                        }}>
+                            <button
+                                onClick={handleSkipBoost}
+                                style={{
+                                    padding: '12px 32px',
+                                    fontSize: '16px',
+                                    fontWeight: '500',
+                                    border: '2px solid #d9d9d9',
+                                    backgroundColor: '#fff',
+                                    color: '#666',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.borderColor = '#999';
+                                    e.currentTarget.style.color = '#333';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.borderColor = '#d9d9d9';
+                                    e.currentTarget.style.color = '#666';
+                                }}
+                            >
+                                {t("SKIP") || "Skip"}
+                            </button>
+                            <button
+                                onClick={handleBoostEvent}
+                                style={{
+                                    padding: '12px 32px',
+                                    fontSize: '16px',
+                                    fontWeight: '500',
+                                    border: 'none',
+                                    backgroundColor: '#56D436',
+                                    color: '#fff',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = '#4AC030';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = '#56D436';
+                                }}
+                            >
+                                {t("BOOST_NOW") || "Boost Now"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </Container>
     );
 };

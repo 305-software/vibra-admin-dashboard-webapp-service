@@ -9,6 +9,7 @@ import { ToastContainer } from "react-toastify";
 import AuthProvider from "./components/context/authProvider";
 import ProtectedRoute from "./components/context/protectedRoute";
 import UserProvider from "./components/context/userContext";
+import { BoostCheckout } from "./components/boost";
 import EditEvent from "./components/createEvent/editEvent";
 import ViewDetails from "./components/eventList/viewDetails";
 import ForgotPassword from "./components/login/forgotPassword";
@@ -44,6 +45,8 @@ function App() {
           <Route path="eventList" element={<ProtectedRoute><UserProvider><Main><EventList /></Main></UserProvider></ProtectedRoute>} />
           <Route path="/eventList/createEvent/:id" element={<ProtectedRoute><UserProvider><Main><EditEvent /></Main></UserProvider></ProtectedRoute>} />
           <Route path="/eventList/createEvent" element={<ProtectedRoute><UserProvider><Main><CreateEvent /></Main></UserProvider></ProtectedRoute>} />
+          <Route path="/boost/checkout/:eventId" element={<ProtectedRoute><UserProvider><Main><BoostCheckout /></Main></UserProvider></ProtectedRoute>} />
+          <Route path="/boost/checkout" element={<ProtectedRoute><UserProvider><Main><BoostCheckout /></Main></UserProvider></ProtectedRoute>} />
           <Route path="booking" element={<ProtectedRoute><UserProvider><Main><Booking /></Main></UserProvider></ProtectedRoute>} />
           <Route path="/eventList/viewDetails/:id" element={<ProtectedRoute><UserProvider><Main><ViewDetails /></Main></UserProvider></ProtectedRoute>} />
           <Route path="customer" element={<ProtectedRoute><UserProvider><Main><Customer /></Main></UserProvider></ProtectedRoute>} />
