@@ -30,6 +30,38 @@ export const setupIntent = async (customerId) => {
 };
 
 /**
+ * Create a Stripe PaymentIntent for processing a payment
+ * @param {Object} paymentData - Payment intent details
+ * @param {string} paymentData.businessId - The customer ID
+ * @param {number} paymentData.amount - The amount to charge (in smallest currency unit, e.g., cents)
+ * @param {string} paymentData.currency - The currency code (e.g., 'usd')
+ * @param {string} [paymentData.paymentMethodId] - Optional payment method ID to attach
+ * @param {string} [paymentData.description] - Optional description of the payment
+ * @param {Object} [paymentData.metadata] - Optional metadata object
+ * @returns {Promise<Object>} PaymentIntent response with clientSecret
+ */
+export const createPaymentIntent = async (paymentData) => {
+  try {
+    const response = await axios.post(
+      config.stripe_payment_intent,
+      paymentData,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error creating payment intent:', error);
+    throw new Error(
+      error.response?.data?.message || 'Failed to create payment intent'
+    );
+  }
+};
+
+/**
  * Add a new payment method for a customer
  * @param {Object} paymentData - Payment method details
  * @param {string} paymentData.customerId - The customer ID

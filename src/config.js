@@ -73,9 +73,11 @@ const combine = {
   sendPhoneOtp: config.baseURL + "/send-verification-code-phone-number",
   sendEmailLink: config.baseURL + "/get-verify-email-link",
   stripe_setup_intent: config.baseURL + "/stripe/setup-intent",
+  stripe_payment_intent: config.baseURL + "/stripe/payment-intent",
   stripe_add_payment_method: config.baseURL + "/stripe/payment-method",
   stripe_list_payment_methods: config.baseURL + "/stripe/payment-methods-list",
   stripe_delete_payment_method: config.baseURL + "/stripe/payment-method",
+  boost_plans: config.baseURL + "/boost-plans",
 };
 
 export default jsonConcat(config, combine);
